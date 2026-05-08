@@ -1,40 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { GetAllProfessionalsController } from "@/app/controller/profissional/get-all-profissional-controler";
-import { CreateProfessionalController } from "@/app/controller/profissional/create-profissional-controller";
-import { UpdateProfessionalController } from "@/app/controller/profissional/update-profissional-controller";
-import { DeleteProfessionalController } from "@/app/controller/profissional/delete-profissional-controller";
-import { GetHorariosByBarbeiroController } from "@/app/controller/horarios/get-by-barbeiros-controller";
+import { CreateHorarioController } from "@/app/controller/horarios/generate-horario-controller";
+import { GetAllHorariosController } from "@/app/controller/horarios/get-all-horarios-controller";
+import { UpdateHorarioController } from "@/app/controller/horarios/update-horario-controller";
+import { DeleteHorarioController } from "@/app/controller/horarios/delete-horario-controller";
 
 /**
- * GET - LISTAR PROFISSIONAIS
- * GET - HORÁRIOS (?barbeiroId=123)
+ * GET - LISTAR HORÁRIOS
  */
-export async function GET(req: NextRequest): Promise<NextResponse> {
+export async function GET(): Promise<NextResponse> {
   try {
-    const { searchParams } = new URL(req.url);
+    const controller =
+      new GetAllHorariosController();
 
-    const barbeiroId = searchParams.get("barbeiroId");
-
-    /**
-     * HORÁRIOS DO BARBEIRO
-     */
-    if (barbeiroId) {
-      const controller = new GetHorariosByBarbeiroController();
-
-      const response = await controller.handle(barbeiroId);
-
-      return NextResponse.json(response, {
-        status: response.code ?? 200,
-      });
-    }
-
-    /**
-     * LISTAR PROFISSIONAIS
-     */
-    const controller = new GetAllProfessionalsController();
-
-    const response = await controller.handle();
+    const response =
+      await controller.handle();
 
     return NextResponse.json(response, {
       status: response.code ?? 200,
@@ -55,15 +35,19 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * POST - CRIAR PROFISSIONAL
+ * POST - CRIAR HORÁRIO
  */
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function POST(
+  req: NextRequest
+): Promise<NextResponse> {
   try {
     const body = await req.json();
 
-    const controller = new CreateProfessionalController();
+    const controller =
+      new CreateHorarioController();
 
-    const response = await controller.handle(body);
+    const response =
+      await controller.handle(body);
 
     return NextResponse.json(response, {
       status: response.code ?? 201,
@@ -84,9 +68,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * PUT - ATUALIZAR PROFISSIONAL
+ * PUT - ATUALIZAR HORÁRIO
  */
-export async function PUT(req: NextRequest): Promise<NextResponse> {
+export async function PUT(
+  req: NextRequest
+): Promise<NextResponse> {
   try {
     const body = await req.json();
 
@@ -104,12 +90,14 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const controller = new UpdateProfessionalController();
+    const controller =
+      new UpdateHorarioController();
 
-    const response = await controller.handle({
-      id,
-      ...data,
-    });
+    const response =
+      await controller.handle({
+        id,
+        ...data,
+      });
 
     return NextResponse.json(response, {
       status: response.code ?? 200,
@@ -130,9 +118,11 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * DELETE - REMOVER PROFISSIONAL
+ * DELETE - REMOVER HORÁRIO
  */
-export async function DELETE(req: NextRequest): Promise<NextResponse> {
+export async function DELETE(
+  req: NextRequest
+): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(req.url);
 
@@ -150,15 +140,20 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const controller = new DeleteProfessionalController();
+    const controller =
+      new DeleteHorarioController();
 
-    const response = await controller.handle(id);
+    const response =
+      await controller.handle(id);
 
     return NextResponse.json(response, {
       status: response.code ?? 200,
     });
   } catch (error) {
-    console.error("Erro na rota DELETE:", error);
+    console.error(
+      "Erro na rota DELETE:",
+      error
+    );
 
     return NextResponse.json(
       {

@@ -10,7 +10,7 @@ import {
 } from "../interfaces/agendamentoInterface";
 import { ProfissionalService } from "../api/profissionaisAdmin";
 import { AppointmentService } from "../api/agendamentoAdmin";
-import { HorarioService } from "../api/agendamentoHorarioAdmin";
+import { HorarioService } from "../api/horarioAdmin";
 import { Profissional } from "../../app/interfaces/profissionaisInterface";
 
 const appointmentService = new AppointmentService();

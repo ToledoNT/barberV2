@@ -1,38 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { GetAllProfessionalsController } from "@/app/controller/profissional/get-all-profissional-controler";
-import { CreateProfessionalController } from "@/app/controller/profissional/create-profissional-controller";
-import { UpdateProfessionalController } from "@/app/controller/profissional/update-profissional-controller";
-import { DeleteProfessionalController } from "@/app/controller/profissional/delete-profissional-controller";
-import { GetHorariosByBarbeiroController } from "@/app/controller/horarios/get-by-barbeiros-controller";
+import { GetAllProcedimentosController } from "@/app/controller/procedimentos/get-all-procedimento-controller";
+import { CreateProcedimentoController } from "@/app/controller/procedimentos/create-procedimento-controller";
+import { UpdateProcedimentoController } from "@/app/controller/procedimentos/update-procedimento-controller";
+import { DeleteProcedimentoController } from "@/app/controller/procedimentos/delete-procedimento-controller";
 
 /**
- * GET - LISTAR PROFISSIONAIS
- * GET - HORÁRIOS (?barbeiroId=123)
+ * GET - LISTAR PROCEDIMENTOS
  */
-export async function GET(req: NextRequest): Promise<NextResponse> {
+export async function GET(): Promise<NextResponse> {
   try {
-    const { searchParams } = new URL(req.url);
-
-    const barbeiroId = searchParams.get("barbeiroId");
-
-    /**
-     * HORÁRIOS DO BARBEIRO
-     */
-    if (barbeiroId) {
-      const controller = new GetHorariosByBarbeiroController();
-
-      const response = await controller.handle(barbeiroId);
-
-      return NextResponse.json(response, {
-        status: response.code ?? 200,
-      });
-    }
-
-    /**
-     * LISTAR PROFISSIONAIS
-     */
-    const controller = new GetAllProfessionalsController();
+    const controller = new GetAllProcedimentosController();
 
     const response = await controller.handle();
 
@@ -55,13 +33,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * POST - CRIAR PROFISSIONAL
+ * POST - CRIAR PROCEDIMENTO
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const body = await req.json();
 
-    const controller = new CreateProfessionalController();
+    const controller = new CreateProcedimentoController();
 
     const response = await controller.handle(body);
 
@@ -84,7 +62,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * PUT - ATUALIZAR PROFISSIONAL
+ * PUT - ATUALIZAR PROCEDIMENTO
  */
 export async function PUT(req: NextRequest): Promise<NextResponse> {
   try {
@@ -104,7 +82,7 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const controller = new UpdateProfessionalController();
+    const controller = new UpdateProcedimentoController();
 
     const response = await controller.handle({
       id,
@@ -130,7 +108,7 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * DELETE - REMOVER PROFISSIONAL
+ * DELETE - REMOVER PROCEDIMENTO
  */
 export async function DELETE(req: NextRequest): Promise<NextResponse> {
   try {
@@ -150,7 +128,7 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const controller = new DeleteProfessionalController();
+    const controller = new DeleteProcedimentoController();
 
     const response = await controller.handle(id);
 

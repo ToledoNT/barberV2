@@ -1,58 +1,74 @@
-import { LoginData, LoginResult, VerifyTokenResponse } from "@/app/interfaces/loginInterface";
+import {
+  LoginData,
+  LoginResult,
+  VerifyTokenResponse,
+} from "@/app/interfaces/loginInterface";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://www.kingsbarber.com.br/api",
+  baseURL: "/api",
   headers: { "Content-Type": "application/json" },
   withCredentials: true,
 });
 
-
 export class AuthService {
   // ---------------- LOGIN ----------------
-async login(data: LoginData): Promise<LoginResult> {
-  try {
+  async login(data: LoginData): Promise<LoginResult> {
+    try {
+      // FIX: rota correta /api/user (login)
+      const response = await api.post<{
+        status: boolean;
+        data?: LoginResult;
+        message?: string;
+      }>("/user", data);
 
-    const response = await api.post<{ status: boolean; data?: LoginResult; message?: string }>("/auth/login", data);
+      if (!response.data.status || !response.data.data) {
+        throw new Error(
+          response.data.message || "Erro ao realizar login"
+        );
+      }
 
+      const role = response.data.data.role;
 
-    if (!response.data.status || !response.data.data) {
-      throw new Error(response.data.message || "Erro ao realizar login");
+      localStorage.setItem("role", role);
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(response.data.data)
+      );
+
+      return response.data.data;
+    } catch (err) {
+      console.error("Erro durante o login:", err);
+      throw err;
     }
-
-    const role = response.data.data.role;
-    localStorage.setItem("role", role);  
-
-   localStorage.setItem("user", JSON.stringify(response.data.data));  
-
-    return response.data.data;
-  } catch (err) {
-    console.error("Erro durante o login:", err);  
-    throw err;
   }
-}
 
-  // ---------------- VERIFICAR TOKEN ----------------2
+  // ---------------- VERIFY TOKEN ----------------
   async verifyToken(): Promise<boolean> {
     try {
-      const response = await api.get<VerifyTokenResponse>("/auth/verify");
+      // FIX: GET /api/user
+      const response =
+        await api.get<VerifyTokenResponse>("/user");
 
-      return response.data.status === true;  
+      return response.data.status === true;
     } catch (err) {
       console.error("Erro ao verificar o token:", err);
-      return false;  
+      return false;
     }
   }
 
   // ---------------- LOGOUT ----------------
   async logout(): Promise<void> {
     try {
-      await api.post("/auth/logout");
+      // FIX: DELETE /api/user
+      await api.delete("/user");
 
-      localStorage.removeItem("role"); 
+      localStorage.removeItem("role");
+      localStorage.removeItem("user");
     } catch (err: any) {
       console.error("Erro durante o logout:", err);
-      throw err; 
+      throw err;
     }
   }
 }

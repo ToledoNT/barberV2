@@ -1,0 +1,134 @@
+import { ICreateHorario } from "../../../../../KingsBarberShopBackend/src/interface/horario/create-horario-interface";
+import { CreateHorarioUseCase } from "../../use-case/horario/create-horario-use-case";
+
+export class CreateHorarioController {
+  async handle(body: any) {
+    const { profissional, data } = body;
+
+    if (
+      !profissional ||
+      typeof profissional !== "object" ||
+      !profissional.id ||
+      typeof profissional.id !== "string" ||
+      profissional.id.trim() === ""
+    ) {
+      return {
+        status: false,
+        code: 400,
+        message:
+          "O campo 'profissional.id' é obrigatório e deve ser uma string válida.",
+        data: [],
+      };
+    }
+
+    let dataValidada: Date;
+
+    if (
+      typeof data === "string" &&
+      data.match(/^\d{4}-\d{2}-\d{2}$/)
+    ) {
+      dataValidada = new Date(
+        data + "T00:00:00.000Z"
+      );
+    } else {
+      dataValidada = new Date(data);
+    }
+
+    if (isNaN(dataValidada.getTime())) {
+      return {
+        status: false,
+        code: 400,
+        message: "A data fornecida é inválida.",
+        data: [],
+      };
+    }
+
+    const dataUTC = new Date(
+      Date.UTC(
+        dataValidada.getUTCFullYear(),
+        dataValidada.getUTCMonth(),
+        dataValidada.getUTCDate()
+      )
+    );
+
+    const horariosParaCriar: ICreateHorario[] = [];
+
+    const horaInicial = 7 * 60;
+    const horaFinal = 21 * 60;
+    const intervalo = 30;
+
+    for (
+      let minutos = horaInicial;
+      minutos < horaFinal;
+      minutos += intervalo
+    ) {
+      const inicioHoras = Math.floor(
+        minutos / 60
+      );
+
+      const inicioMinutos = minutos % 60;
+
+      const fimHoras = Math.floor(
+        (minutos + intervalo) / 60
+      );
+
+      const fimMinutos =
+        (minutos + intervalo) % 60;
+
+      const inicio = `${inicioHoras
+        .toString()
+        .padStart(2, "0")}:${inicioMinutos
+        .toString()
+        .padStart(2, "0")}`;
+
+      const fim = `${fimHoras
+        .toString()
+        .padStart(2, "0")}:${fimMinutos
+        .toString()
+        .padStart(2, "0")}`;
+
+      horariosParaCriar.push({
+        profissionalId: profissional.id,
+        data: dataUTC,
+        inicio,
+        fim,
+        disponivel: false,
+      });
+    }
+
+    const resultados = [];
+    const useCase =
+      new CreateHorarioUseCase();
+
+    for (const horario of horariosParaCriar) {
+      try {
+        const result =
+          await useCase.execute(horario);
+
+        resultados.push(result);
+
+      } catch (err) {
+        console.error(
+          "Erro ao criar horário:",
+          err
+        );
+
+        return {
+          status: false,
+          code: 500,
+          message:
+            "Erro ao criar os horários.",
+          data: [],
+        };
+      }
+    }
+
+    return {
+      status: true,
+      code: 201,
+      message:
+        "Horários gerados com sucesso.",
+      data: resultados,
+    };
+  }
+}

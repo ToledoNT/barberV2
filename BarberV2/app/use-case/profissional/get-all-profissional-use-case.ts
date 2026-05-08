@@ -1,4 +1,5 @@
-import { ResponseTemplateInterface } from "../interfaces/response-templete-interface";
+import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
+import { CreateLog } from "../logs/create-log";
 
 /**
  * REPOSITORY DE PROFISSIONAIS
@@ -15,22 +16,32 @@ export class GetAllProfessionalsUseCase {
 
   async execute(): Promise<ResponseTemplateInterface> {
     try {
-      const response = await this.repository.getAll();
+      const responseGetAll = await this.repository.getAll();
 
-      if (!response.status) {
-        console.warn("Falha ao buscar profissionais:", response.message);
+      if (!responseGetAll.status) {
+        console.warn(
+          "Falha ao buscar profissionais:",
+          responseGetAll.message
+        );
+
+        await new CreateLog().execute(responseGetAll);
       }
 
-      return response;
+      return responseGetAll;
+
     } catch (error) {
       console.error("Erro no use case (profissionais):", error);
 
-      return {
+      const errorResponse: ResponseTemplateInterface = {
         status: false,
         message: "Erro ao buscar profissionais",
         data: [],
         code: 500,
       };
+
+      await new CreateLog().execute(errorResponse);
+
+      return errorResponse;
     }
   }
 }

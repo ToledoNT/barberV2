@@ -1,38 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { GetAllProfessionalsController } from "@/app/controller/profissional/get-all-profissional-controler";
-import { CreateProfessionalController } from "@/app/controller/profissional/create-profissional-controller";
-import { UpdateProfessionalController } from "@/app/controller/profissional/update-profissional-controller";
-import { DeleteProfessionalController } from "@/app/controller/profissional/delete-profissional-controller";
+import { CreateAppointmentController } from "@/app/controller/appointments/create-agendamento-controller";
+import { GetAllAppointmentsController } from "@/app/controller/appointments/get-all-agendamentos-controler";
+import { UpdateAppointmentController } from "@/app/controller/appointments/update-agendamento-controller";
+import { DeleteAppointmentController } from "@/app/controller/appointments/delete-agendamento-controller";
 import { GetHorariosByBarbeiroController } from "@/app/controller/horarios/get-by-barbeiros-controller";
 
 /**
- * GET - LISTAR PROFISSIONAIS
- * GET - HORÁRIOS (?barbeiroId=123)
+ * GET - LISTAR AGENDAMENTOS
  */
 export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(req.url);
 
-    const barbeiroId = searchParams.get("barbeiroId");
+    const barbeiro = searchParams.get("barbeiro");
+    const data = searchParams.get("data");
 
-    /**
-     * HORÁRIOS DO BARBEIRO
-     */
-    if (barbeiroId) {
+    // ---------------- HORÁRIOS DISPONÍVEIS ----------------
+    if (barbeiro && data) {
       const controller = new GetHorariosByBarbeiroController();
 
-      const response = await controller.handle(barbeiroId);
+      const response = await controller.handle(barbeiro);
 
       return NextResponse.json(response, {
         status: response.code ?? 200,
       });
     }
 
-    /**
-     * LISTAR PROFISSIONAIS
-     */
-    const controller = new GetAllProfessionalsController();
+    // ---------------- AGENDAMENTOS ----------------
+    const controller = new GetAllAppointmentsController();
 
     const response = await controller.handle();
 
@@ -40,7 +36,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       status: response.code ?? 200,
     });
   } catch (error) {
-    console.error("Erro na rota GET:", error);
+    console.error("Erro GET agendamento:", error);
 
     return NextResponse.json(
       {
@@ -55,13 +51,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * POST - CRIAR PROFISSIONAL
+ * POST - CRIAR AGENDAMENTO
  */
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     const body = await req.json();
 
-    const controller = new CreateProfessionalController();
+    const controller = new CreateAppointmentController();
 
     const response = await controller.handle(body);
 
@@ -69,7 +65,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       status: response.code ?? 201,
     });
   } catch (error) {
-    console.error("Erro na rota POST:", error);
+    console.error("Erro POST agendamento:", error);
 
     return NextResponse.json(
       {
@@ -84,7 +80,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * PUT - ATUALIZAR PROFISSIONAL
+ * PUT - ATUALIZAR AGENDAMENTO
  */
 export async function PUT(req: NextRequest): Promise<NextResponse> {
   try {
@@ -104,18 +100,15 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const controller = new UpdateProfessionalController();
+    const controller = new UpdateAppointmentController();
 
-    const response = await controller.handle({
-      id,
-      ...data,
-    });
+    const response = await controller.handle({ id, ...data });
 
     return NextResponse.json(response, {
       status: response.code ?? 200,
     });
   } catch (error) {
-    console.error("Erro na rota PUT:", error);
+    console.error("Erro PUT agendamento:", error);
 
     return NextResponse.json(
       {
@@ -130,7 +123,7 @@ export async function PUT(req: NextRequest): Promise<NextResponse> {
 }
 
 /**
- * DELETE - REMOVER PROFISSIONAL
+ * DELETE - REMOVER AGENDAMENTO
  */
 export async function DELETE(req: NextRequest): Promise<NextResponse> {
   try {
@@ -150,7 +143,7 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const controller = new DeleteProfessionalController();
+    const controller = new DeleteAppointmentController();
 
     const response = await controller.handle(id);
 
@@ -158,7 +151,7 @@ export async function DELETE(req: NextRequest): Promise<NextResponse> {
       status: response.code ?? 200,
     });
   } catch (error) {
-    console.error("Erro na rota DELETE:", error);
+    console.error("Erro DELETE agendamento:", error);
 
     return NextResponse.json(
       {
