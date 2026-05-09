@@ -1,389 +1,620 @@
 "use client";
 
-import React, { useState, ReactNode } from "react";
-import Footer from "./components/ui/Footer";
+import React, { useState } from "react";
 import Image from "next/image";
-import AgendamentoPrivadoForm from "./components/agendamento/AgendamentoPrivadoForm";
 import { useAgendamentosAdmin } from "./hook/useAgendamentoAdmin";
-import { Agendamento } from "./interfaces/agendamentoInterface";
 import { Notification } from "./components/ui/componenteNotificacao";
 import { ConfirmDialog } from "./components/ui/componenteConfirmação";
+import { Agendamento } from "./interfaces/agendamentoInterface";
+import { Trash2, X, Plus, ArrowLeft, Check, User, Phone, Mail, Loader2, Calendar } from "lucide-react";
 
-const formatarDataBrasileira = (dataString: string) => {
-  const data = new Date(dataString);
-  const dataAjustada = new Date(data.getTime() + (3 * 60 * 60 * 1000)); 
+type Step = "profissionais" | "servicos" | "carrinho";
+type MainScreen = "escolha" | "agendamento";
+type CarrinhoStep = "email" | "verificacao" | "dados";
 
-  return dataAjustada.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
-};
+interface ItemCarrinho {
+  servico: any;
+  horario: any;
+}
 
 export default function Home() {
-  const { barbeiros, horarios, procedimentosBarbeiro, addAgendamento } = useAgendamentosAdmin();
-  
-  const [notification, setNotification] = useState<{
-    isOpen: boolean;
-    message: string;
-    type: "info" | "success" | "warning" | "error";
-  }>({ isOpen: false, message: "", type: "info" });
+  const {
+    barbeiros,
+    horarios,
+    procedimentosBarbeiro,
+    addAgendamento,
+    fetchBarbeiroDados,
+  } = useAgendamentosAdmin();
 
-  const [confirmDialog, setConfirmDialog] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: ReactNode;
-    type: "info" | "warning" | "error";
-    onConfirm: (() => void) | null;
-  }>({ isOpen: false, title: "", message: "", type: "info", onConfirm: null });
+  const [mainScreen, setMainScreen] = useState<MainScreen>("escolha");
+  const [step, setStep] = useState<Step>("profissionais");
+  const [selectedProfissional, setSelectedProfissional] = useState<any>(null);
+  const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
 
-  const [formKey, setFormKey] = useState(0);
-  const [showForm, setShowForm] = useState(false);
+  const [cliente, setCliente] = useState({
+    nome: "",
+    telefone: "",
+    email: "",
+  });
 
-  const whatsappNumber = "+555499229241";
-  const whatsappMessage = "Olá! Gostaria de mais informações sobre os serviços da barbearia.";
-  const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+  const [carrinhoStep, setCarrinhoStep] = useState<CarrinhoStep>("email");
+  const [codigoEnviado, setCodigoEnviado] = useState(false);
+  const [codigoDigitado, setCodigoDigitado] = useState("");
+  const [enviandoCodigo, setEnviandoCodigo] = useState(false);
+  const [verificando, setVerificando] = useState(false);
+  const [emailVerificado, setEmailVerificado] = useState(false);
 
-  const notify = (msg: string, type: "info" | "success" | "warning" | "error" = "info") => {
-    setNotification({ isOpen: true, message: msg, type });
+  const [showHorariosModal, setShowHorariosModal] = useState(false);
+  const [tempServico, setTempServico] = useState<any>(null);
+
+  const [notification, setNotification] = useState<any>({
+    isOpen: false,
+    message: "",
+    type: "info",
+  });
+
+  const [confirmDialog, setConfirmDialog] = useState<any>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+    onConfirm: null,
+  });
+
+  const notify = (message: string, type: any = "info") => {
+    setNotification({ isOpen: true, message, type });
   };
 
-  const confirm = (title: string, message: ReactNode, onConfirm: () => void, type: "info" | "warning" | "error" = "info") => {
-    setConfirmDialog({ isOpen: true, title, message, type, onConfirm });
-  };
-
-  const closeNotification = () => {
-    setNotification(prev => ({ ...prev, isOpen: false }));
-  };
-
-  const closeConfirmDialog = () => {
-    setConfirmDialog(prev => ({ ...prev, isOpen: false, onConfirm: null }));
-  };
-
-  const handleConfirm = () => {
-    confirmDialog.onConfirm?.();
-    closeConfirmDialog();
-  };
-
-  // Função para mostrar o formulário
-  const handleShowForm = () => {
-    setShowForm(true);
-  };
-
-  // Função para esconder o formulário
-  const handleHideForm = () => {
-    setShowForm(false);
-    notify("ℹ️ Agendamento cancelado. Clique em 'Agendar Agora' quando quiser marcar seu horário.", "info");
-  };
-
-  // Função de confirmação de agendamento
-  const confirmarAgendamento = (agendamento: Agendamento): Promise<boolean> => {
-    return new Promise((resolve) => {
-
-      const barbeiroSelecionado = barbeiros.find(b => b.id === agendamento.barbeiro);
-      const barbeiroNome = barbeiroSelecionado?.nome || "Barbeiro não encontrado";
-
-      // Recuperando o serviço do localStorage (parseando o objeto JSON)
-      let procedimentoNome = "Serviço não selecionado";
-      const savedServico = localStorage.getItem('selectedServico');
-      if (savedServico) {
-        const parsedServico = JSON.parse(savedServico);
-        procedimentoNome = parsedServico.label || "Serviço não encontrado";
-      }
-
-      // Recuperando dados do horário
-      const horarioSelecionado = horarios.find(h => h.id === agendamento.hora);
-      const horarioLabel = horarioSelecionado?.label || `${horarioSelecionado?.inicio} - ${horarioSelecionado?.fim}` || "Horário não encontrado";
-
-      // Formatando a data
-      const dataFormatada = formatarDataBrasileira(agendamento.data);
-
-      // Confirmação com os detalhes do agendamento
-      const mensagemConfirmacao = (
-        <div className="space-y-4">
-          {/* Cabeçalho */}
-          <div className="text-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-[#FFA500] to-[#FF8C00] rounded-full flex items-center justify-center mx-auto mb-2">
-              <span className="text-white text-base">📋</span>
-            </div>
-            <h3 className="text-white font-bold text-base mb-1">Confirmar Agendamento</h3>
-            <p className="text-gray-300 text-xs">Revise os detalhes abaixo</p>
-          </div>
-
-          {/* Detalhes do agendamento */}
-          <div className="bg-gradient-to-br from-[#1E1E1E] to-[#2A2A2A] border border-[#FFA500]/20 rounded-lg p-3 max-h-[45vh] overflow-y-auto scrollbar-thin scrollbar-thumb-[#FFA500] scrollbar-track-gray-700">
-            <div className="space-y-2">
-              {/* Barbeiro */}
-              <div className="flex items-center gap-2 p-2 bg-white/5 rounded-md">
-                <div className="w-7 h-7 bg-[#FFA500]/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-[#FFA500] text-xs">💈</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-400 font-medium">Barbeiro</p>
-                  <p className="font-semibold text-white text-sm truncate">{barbeiroNome}</p>
-                </div>
-              </div>
-
-              {/* Data e Horário */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-center gap-2 p-2 bg-white/5 rounded-md">
-                  <div className="w-6 h-6 bg-[#FFA500]/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-[#FFA500] text-xs">📅</span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-gray-400 font-medium">Data</p>
-                    <p className="font-semibold text-white text-xs">{dataFormatada}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 p-2 bg-white/5 rounded-md">
-                  <div className="w-6 h-6 bg-[#FFA500]/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-[#FFA500] text-xs">⏰</span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-gray-400 font-medium">Horário</p>
-                    <p className="font-semibold text-white text-xs truncate">{horarioLabel}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Cliente */}
-              <div className="flex items-center gap-2 p-2 bg-white/5 rounded-md">
-                <div className="w-7 h-7 bg-[#FFA500]/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-[#FFA500] text-xs">👤</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-400 font-medium">Cliente</p>
-                  <p className="font-semibold text-white text-sm truncate">{agendamento.nome}</p>
-                </div>
-              </div>
-
-              {/* Serviço */}
-              <div className="flex items-center gap-2 p-2 bg-white/5 rounded-md">
-                <div className="w-7 h-7 bg-[#FFA500]/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-[#FFA500] text-xs">✂️</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-400 font-medium">Serviço</p>
-                  <p className="font-semibold text-white text-sm truncate">{procedimentoNome}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Mensagem de confirmação */}
-          <div className="text-center pt-2">
-            <p className="text-[#FFA500] font-semibold text-sm">Confirmar este agendamento?</p>
-          </div>
-        </div>
-      );
-
-      confirm("", mensagemConfirmacao, () => resolve(true), "info");
+  const confirm = (title: string, message: any, onConfirm: () => void) => {
+    setConfirmDialog({
+      isOpen: true,
+      title,
+      message,
+      type: "info",
+      onConfirm,
     });
   };
 
-  const handleSaveAgendamento = async (agendamento: Agendamento) => {
+  const enviarCodigoVerificacao = async () => {
+    if (!cliente.email.trim()) {
+      notify("Digite seu e-mail primeiro", "warning");
+      return;
+    }
+
+    setEnviandoCodigo(true);
     try {
-      
-      const confirmado = await confirmarAgendamento(agendamento);
-      
-      if (!confirmado) {
-        notify("❌ Agendamento cancelado", "warning");
-        return;
-      }
+      const response = await fetch("/api/enviar-codigo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cliente.email }),
+      });
 
-      const payload: Agendamento = { 
-        ...agendamento, 
-        inicio: agendamento.inicio || agendamento.hora, 
-        fim: agendamento.fim || agendamento.hora,
-        status: agendamento.status || "Agendado" as any
-      };
+      if (!response.ok) throw new Error("Erro ao enviar código");
 
-      await addAgendamento(payload);
-      notify("✅ Agendamento realizado com sucesso! Te esperamos na barbearia! 🎉", "success");
-      setFormKey(prev => prev + 1);
-      setShowForm(false); 
-
-    } catch (err) {
-      console.error("Erro ao salvar agendamento:", err);
-      notify("❌ Ops! Algo deu errado. Tente novamente.", "error");
+      notify("Código enviado! Verifique seu e-mail.", "success");
+      setCodigoEnviado(true);
+      setCarrinhoStep("verificacao");
+    } catch (error) {
+      console.error(error);
+      notify("Não foi possível enviar o código. Tente novamente.", "error");
+    } finally {
+      setEnviandoCodigo(false);
     }
   };
 
-  const handleCancel = () => {
-    handleHideForm(); 
+  const verificarCodigo = async () => {
+    if (codigoDigitado.length !== 6) {
+      notify("Digite o código de 6 dígitos", "warning");
+      return;
+    }
+
+    setVerificando(true);
+    try {
+      const response = await fetch("/api/verificar-codigo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: cliente.email, codigo: codigoDigitado }),
+      });
+
+      if (!response.ok) throw new Error("Código inválido");
+
+      notify("E-mail verificado com sucesso!", "success");
+      setEmailVerificado(true);
+      setCarrinhoStep("dados");
+    } catch (error) {
+      console.error(error);
+      notify("Código incorreto ou expirado. Tente novamente.", "error");
+    } finally {
+      setVerificando(false);
+    }
+  };
+
+  const finalizarAgendamento = async () => {
+    if (carrinho.length === 0) {
+      notify("Nenhum serviço agendado", "warning");
+      return;
+    }
+
+    if (!cliente.nome.trim()) {
+      notify("Por favor, informe seu nome", "warning");
+      return;
+    }
+    if (!cliente.telefone.trim()) {
+      notify("Por favor, informe seu telefone", "warning");
+      return;
+    }
+
+    const item = carrinho[0];
+    const payload: Agendamento = {
+      nome: cliente.nome,
+      telefone: cliente.telefone,
+      email: cliente.email,
+      data: item.horario.data || "",
+      hora: item.horario.inicio,
+      inicio: item.horario.inicio,
+      fim: item.horario.fim,
+      servico: item.servico.nome,
+      barbeiro: selectedProfissional.nome,
+      profissionalId: String(selectedProfissional.id),
+      servicoId: String(item.servico.id),
+      servicoNome: item.servico.nome,
+      servicoPreco: item.servico.valor,
+    };
+
+    try {
+      await addAgendamento(payload);
+      notify(`✅ Agendamento realizado!`, "success");
+      setMainScreen("escolha");
+      setStep("profissionais");
+      setSelectedProfissional(null);
+      setCarrinho([]);
+      setCliente({ nome: "", telefone: "", email: "" });
+      setCarrinhoStep("email");
+      setCodigoEnviado(false);
+      setCodigoDigitado("");
+      setEmailVerificado(false);
+    } catch (err) {
+      console.error(err);
+      notify("Erro ao criar agendamento", "error");
+    }
+  };
+
+  const removerDoCarrinho = () => {
+    setCarrinho([]);
+    if (step === "carrinho") {
+      setCarrinhoStep("email");
+      setEmailVerificado(false);
+      setCodigoEnviado(false);
+      setCodigoDigitado("");
+    }
+    notify("Serviço removido. Você pode escolher outro.", "info");
+  };
+
+  const iniciarAgendamento = () => {
+    setMainScreen("agendamento");
+    setStep("profissionais");
+    setSelectedProfissional(null);
+    setCarrinho([]);
+    setCliente({ nome: "", telefone: "", email: "" });
+    setCarrinhoStep("email");
+    setEmailVerificado(false);
+    setCodigoEnviado(false);
+    setCodigoDigitado("");
+  };
+
+  const agendamentoGrupo = () => {
+    notify("📋 Agendamento em grupo - Em breve disponível!", "info");
+  };
+
+  const handleSelectProfissional = async (prof: any) => {
+    setSelectedProfissional(prof);
+    await fetchBarbeiroDados(prof.id);
+    setStep("servicos");
+  };
+
+  const abrirSelecionarHorario = (servico: any) => {
+    if (horarios.length === 0) {
+      notify("Não há horários disponíveis para este profissional.", "warning");
+      return;
+    }
+    setTempServico(servico);
+    setShowHorariosModal(true);
+  };
+
+  const adicionarAoCarrinho = (horario: any) => {
+    if (!tempServico) return;
+    setCarrinho([{ servico: tempServico, horario }]);
+    notify(`${tempServico.nome} adicionado! Clique em "Continuar" para finalizar.`, "success");
+    setShowHorariosModal(false);
+    setTempServico(null);
+  };
+
+  const totalCarrinho = carrinho.reduce((acc, i) => acc + i.servico.valor, 0);
+
+  const formatarDataHora = (horario: any) => {
+    if (horario.data) {
+      const dataObj = new Date(horario.data);
+      const dia = dataObj.getDate().toString().padStart(2, '0');
+      const mes = (dataObj.getMonth() + 1).toString().padStart(2, '0');
+      return `${dia}/${mes} • ${horario.inicio}`;
+    }
+    return horario.inicio;
+  };
+
+  const getResumoItem = () => {
+    if (carrinho.length === 0) return null;
+    const item = carrinho[0];
+    return {
+      nome: item.servico.nome,
+      horarioStr: formatarDataHora(item.horario),
+      valor: item.servico.valor,
+    };
+  };
+
+  const isServicoSelecionado = (servicoId: number) => {
+    return carrinho.length > 0 && carrinho[0].servico.id === servicoId;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0D0D0D] via-[#151515] to-[#1A1A1A] text-white flex flex-col">
-      {/* Notificações */}
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-stone-50 via-white to-stone-100/60 font-sans">
       <Notification
-        isOpen={notification.isOpen}
-        message={notification.message}
-        type={notification.type}
-        onClose={closeNotification}
+        {...notification}
+        onClose={() => setNotification((p: any) => ({ ...p, isOpen: false }))}
       />
-
       <ConfirmDialog
-        isOpen={confirmDialog.isOpen}
-        title={confirmDialog.title}
-        message={confirmDialog.message}
-        type={confirmDialog.type}
-        onConfirm={handleConfirm}
-        onCancel={closeConfirmDialog}
+        {...confirmDialog}
+        onCancel={() => setConfirmDialog((p: any) => ({ ...p, isOpen: false }))}
+        onConfirm={() => {
+          confirmDialog.onConfirm?.();
+          setConfirmDialog((p: any) => ({ ...p, isOpen: false }));
+        }}
       />
 
-      {/* Botão do WhatsApp Flutuante */}
-      {!confirmDialog.isOpen && (
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="fixed bottom-4 right-4 z-40 w-12 h-12 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-110 animate-bounce"
-          title="Fale conosco no WhatsApp"
-        >
-          <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893-.001-3.189-1.248-6.189-3.515-8.452"/>
-          </svg>
-        </a>
+      {/* TELA INICIAL - Estilo preto e branco */}
+      {mainScreen === "escolha" && (
+        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center animate-fade-in">
+          <div className="bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-md mb-6 transition-transform hover:scale-105 duration-300">
+            <Image
+              src="/kingsbarber2.png"
+              alt="logo"
+              width={90}
+              height={90}
+              className="rounded-full"
+            />
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight text-stone-900">Kings Barber</h1>
+          <p className="text-stone-500 mt-2 mb-8">Escolha uma opção</p>
+          <div className="w-full max-w-sm space-y-4">
+            <button
+              onClick={iniciarAgendamento}
+              className="group w-full bg-stone-900 hover:bg-stone-800 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5"
+            >
+              Fazer agendamento
+            </button>
+            <button
+              onClick={agendamentoGrupo}
+              className="group w-full bg-white border-2 border-stone-300 hover:border-stone-400 text-stone-700 font-semibold py-3 px-6 rounded-xl transition-all hover:-translate-y-0.5"
+            >
+              Agendamento em grupo
+            </button>
+          </div>
+        </div>
       )}
 
-      {/* Conteúdo Principal */}
-      <div className="flex-1 container mx-auto px-3 sm:px-6 lg:px-8 py-4">
-        {/* Header compacto */}
-        <div className="text-center mb-6">
-          <div className="flex justify-center mb-3">
-            <Image 
-              src="/kingsbarber2.png" 
-              alt="Logo da Barbearia" 
-              width={120}
-              height={25}
-              className="mb-2 drop-shadow-lg"
-              priority
-            />
-          </div>
-          
-          <div className="mb-3">
-            <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FFA500] via-[#FF8C00] to-[#FF6B00] mb-2 tracking-tight">
-              BEM-VINDO
-            </h1>
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <div className="h-px w-6 lg:w-10 bg-gradient-to-r from-transparent to-[#FFA500]"></div>
-              <span className="text-[#FFA500] text-sm lg:text-base font-semibold">À NOSSA BARBEARIA</span>
-              <div className="h-px w-6 lg:w-10 bg-gradient-to-l from-transparent to-[#FFA500]"></div>
-            </div>
+      {/* FLUXO DE AGENDAMENTO */}
+      {mainScreen === "agendamento" && (
+        <>
+          <div className="flex flex-col items-center pt-6 pb-2 text-center">
+            <h1 className="text-2xl font-bold tracking-tight text-stone-800 mt-3">Kings Barber</h1>
+            <p className="text-stone-500 text-sm">
+              {step === "profissionais" && "Escolha um profissional"}
+              {step === "servicos" && "Escolha um serviço e horário"}
+              {step === "carrinho" && (
+                carrinhoStep === "email" ? "Informe seu e-mail" :
+                carrinhoStep === "verificacao" ? "Confirme seu e-mail" :
+                "Seus dados pessoais"
+              )}
+            </p>
           </div>
 
-          <p className="text-gray-300 text-sm md:text-base lg:text-lg max-w-2xl lg:max-w-3xl mx-auto leading-relaxed font-light">
-            Onde cada corte conta uma história
-            <span className="block text-[#FFA500] font-medium mt-1 lg:mt-2 text-xs md:text-sm">
-              Estilo • Confiança • Tradição
-            </span>
-          </p>
+          <div className={`flex-1 max-w-md mx-auto w-full px-5 ${step === "carrinho" ? "pb-32" : "pb-8"}`}>
+            {/* PROFISSIONAIS - sem o texto "Clique para selecionar" */}
+            {step === "profissionais" && (
+              <div className="space-y-3">
+                <h2 className="text-xl font-semibold text-stone-800 mb-4">
+                  Selecione um profissional
+                </h2>
+                {barbeiros.map((b: any, idx: number) => (
+                  <div
+                    key={b.id}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${idx * 100}ms`, animationFillMode: 'backwards' }}
+                  >
+                    <button
+                      onClick={() => handleSelectProfissional(b)}
+                      className="group w-full bg-white/70 backdrop-blur-sm border border-stone-200 rounded-2xl p-5 text-left transition-all duration-300 hover:shadow-md hover:border-amber-300 focus:ring-2 focus:ring-amber-400"
+                    >
+                      <p className="font-semibold text-stone-800 text-lg">{b.nome}</p>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
-          <div className="flex justify-center gap-4 lg:gap-8 mt-4 lg:mt-6 text-[#FFA500]">
-            <div className="flex flex-col items-center">
-              <span className="text-lg lg:text-xl mb-1">✂️</span>
-              <span className="text-[9px] lg:text-[10px] font-medium">CORTE PRECISO</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-lg lg:text-xl mb-1">💈</span>
-              <span className="text-[9px] lg:text-[10px] font-medium">ESTILO ÚNICO</span>
-            </div>
-            <div className="flex flex-col items-center">
-              <span className="text-lg lg:text-xl mb-1">⭐</span>
-              <span className="text-[9px] lg:text-[10px] font-medium">QUALIDADE</span>
-            </div>
-          </div>
-
-          {/* Botão para mostrar formulário */}
-          {!showForm && (
-            <div className="mt-6 lg:mt-8">
-              <button
-                onClick={handleShowForm}
-                className="group relative bg-gradient-to-r from-[#FFA500] to-[#FF8C00] hover:from-[#FF8C00] hover:to-[#FF6B00] text-white font-bold py-4 px-10 rounded-xl shadow-2xl transition-all duration-500 transform hover:scale-105 hover:shadow-3xl text-lg overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                
-                <div className="relative flex items-center justify-center gap-3">
-                  <span className="text-xl transition-transform duration-300 group-hover:scale-110">📅</span>
-                  <span className="transition-all duration-300 group-hover:tracking-wider">Agendar Agora</span>
+            {/* SERVIÇOS */}
+            {step === "servicos" && (
+              <div className="animate-fade-in">
+                <button
+                  onClick={() => setStep("profissionais")}
+                  className="flex items-center gap-1 text-stone-500 hover:text-stone-800 mb-4 transition-colors"
+                >
+                  <ArrowLeft size={18} /> Voltar
+                </button>
+                <h2 className="text-xl font-semibold text-stone-800 mb-3">
+                  Selecione um serviço
+                </h2>
+                <p className="text-sm text-stone-500 mb-4">
+                  Clique no ícone para escolher o horário
+                </p>
+                <div className="space-y-3">
+                  {procedimentosBarbeiro.map((servico: any, idx: number) => {
+                    const isBeingSelected = tempServico?.id === servico.id && showHorariosModal;
+                    const isSelected = isServicoSelecionado(servico.id);
+                    return (
+                      <div
+                        key={servico.id}
+                        className={`animate-fade-in group bg-white/80 backdrop-blur-sm border rounded-xl p-4 flex justify-between items-center transition-all duration-300 hover:shadow-md ${
+                          isSelected
+                            ? "border-green-500 bg-green-50/30 shadow-sm"
+                            : "border-stone-200 hover:border-amber-200"
+                        } ${isBeingSelected ? "ring-2 ring-amber-400" : ""}`}
+                        style={{ animationDelay: `${idx * 80}ms`, animationFillMode: 'backwards' }}
+                      >
+                        <div>
+                          <p className="font-medium text-stone-800">{servico.nome}</p>
+                          <p className="text-amber-600 font-bold">R$ {servico.valor}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          {isSelected && (
+                            <button
+                              onClick={removerDoCarrinho}
+                              className="w-9 h-9 rounded-full border-2 border-red-200 text-red-500 hover:bg-red-50 hover:border-red-400 transition-all flex items-center justify-center"
+                              title="Remover serviço"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => abrirSelecionarHorario(servico)}
+                            disabled={showHorariosModal}
+                            className={`
+                              w-9 h-9 rounded-full border-2 transition-all flex items-center justify-center
+                              ${showHorariosModal
+                                ? "border-stone-200 text-stone-300 cursor-not-allowed bg-stone-50"
+                                : isSelected
+                                ? "border-green-500 bg-green-100 text-green-600 cursor-default"
+                                : "border-stone-300 text-stone-500 hover:border-amber-400 hover:text-amber-500 hover:bg-amber-50"
+                              }
+                            `}
+                          >
+                            {isBeingSelected ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : isSelected ? (
+                              <Check size={16} className="text-green-600" />
+                            ) : (
+                              <Plus size={16} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#FFA500] to-[#FF8C00] opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
-                <div className="absolute inset-[2px] rounded-xl bg-gradient-to-br from-[#0D0D0D] to-[#1A1A1A] -z-10"></div>
+              </div>
+            )}
+
+            {/* CARRINHO */}
+            {step === "carrinho" && (
+              <div className="animate-fade-in">
+                <button
+                  onClick={() => setStep("servicos")}
+                  className="flex items-center gap-1 text-stone-500 hover:text-stone-800 mb-4 transition-colors"
+                >
+                  <ArrowLeft size={18} /> Voltar aos serviços
+                </button>
+
+                {carrinhoStep === "email" && (
+                  <div className="bg-white rounded-2xl border border-stone-200 p-5 space-y-4 shadow-sm animate-fade-in">
+                    <div className="relative">
+                      <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                      <input
+                        type="email"
+                        placeholder="Seu e-mail (obrigatório)"
+                        value={cliente.email}
+                        onChange={(e) => setCliente({ ...cliente, email: e.target.value })}
+                        className="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-black text-stone-800"
+                      />
+                    </div>
+                    <button
+                      onClick={enviarCodigoVerificacao}
+                      disabled={!cliente.email.trim() || enviandoCodigo}
+                      className="w-full bg-gray-100 hover:bg-gray-200 text-stone-800 font-medium py-2 rounded-xl transition-all disabled:opacity-50 border border-stone-300"
+                    >
+                      {enviandoCodigo ? <Loader2 size={18} className="animate-spin mx-auto" /> : "Enviar código de verificação"}
+                    </button>
+                  </div>
+                )}
+
+                {carrinhoStep === "verificacao" && (
+                  <div className="bg-white rounded-2xl border border-stone-200 p-5 space-y-4 shadow-sm animate-fade-in">
+                    <p className="text-sm text-stone-600">
+                      Enviamos um código para <strong>{cliente.email}</strong>
+                    </p>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="Código de 6 dígitos"
+                        value={codigoDigitado}
+                        onChange={(e) => setCodigoDigitado(e.target.value)}
+                        className="w-full px-4 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 text-center text-xl tracking-widest text-stone-800"
+                        maxLength={6}
+                      />
+                    </div>
+                    <button
+                      onClick={verificarCodigo}
+                      disabled={codigoDigitado.length !== 6 || verificando}
+                      className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-xl transition-all disabled:opacity-50"
+                    >
+                      {verificando ? <Loader2 size={18} className="animate-spin mx-auto" /> : "Verificar código"}
+                    </button>
+                    <button
+                      onClick={() => setCarrinhoStep("email")}
+                      className="w-full text-stone-500 text-sm underline mt-2"
+                    >
+                      Corrigir e-mail
+                    </button>
+                  </div>
+                )}
+
+                {carrinhoStep === "dados" && (
+                  <div className="bg-white rounded-2xl border border-stone-200 p-5 space-y-4 shadow-sm animate-fade-in">
+                    <div className="relative">
+                      <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                      <input
+                        type="text"
+                        placeholder="Nome completo"
+                        value={cliente.nome}
+                        onChange={(e) => setCliente({ ...cliente, nome: e.target.value })}
+                        className="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 text-stone-800"
+                      />
+                    </div>
+                    <div className="relative">
+                      <Phone size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                      <input
+                        type="tel"
+                        placeholder="Telefone (com DDD)"
+                        value={cliente.telefone}
+                        onChange={(e) => setCliente({ ...cliente, telefone: e.target.value })}
+                        className="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 text-stone-800"
+                      />
+                    </div>
+                    {carrinho.length > 0 && (
+                      <button
+                        onClick={removerDoCarrinho}
+                        className="w-full mt-2 bg-red-50 hover:bg-red-100 text-red-600 font-medium py-2 rounded-xl transition-all border border-red-200"
+                      >
+                        Remover serviço agendado
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* BARRA FIXA INFERIOR (SERVIÇOS) - Botão Continuar VERDE */}
+      {mainScreen === "agendamento" && step === "servicos" && carrinho.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 shadow-lg rounded-t-2xl p-4 animate-slide-up">
+          <div className="max-w-md mx-auto flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 flex-1">
+              <Calendar size={16} className="text-stone-500" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-stone-800">
+                  {getResumoItem()?.nome}
+                </span>
+                <span className="text-xs text-stone-500">
+                  {getResumoItem()?.horarioStr} • R$ {getResumoItem()?.valor}
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => setStep("carrinho")}
+              className="bg-green-600 hover:bg-green-700 text-white text-sm font-medium px-5 py-2 rounded-full transition-all shadow-md"
+            >
+              Continuar →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* BARRA FIXA INFERIOR (CARRINHO - etapa dados) Botão Finalizar VERDE */}
+      {mainScreen === "agendamento" && step === "carrinho" && carrinho.length > 0 && carrinhoStep === "dados" && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-200 shadow-lg rounded-t-2xl p-4 animate-slide-up">
+          <div className="max-w-md mx-auto">
+            <div className="flex justify-between text-sm mb-2">
+              <div>
+                <span className="font-medium text-stone-800">{getResumoItem()?.nome}</span>
+                <span className="text-stone-500 text-xs ml-2">{getResumoItem()?.horarioStr}</span>
+              </div>
+              <span className="font-semibold text-amber-600">R$ {getResumoItem()?.valor}</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t border-stone-100">
+              <span className="font-semibold text-stone-800">Total</span>
+              <span className="font-bold text-amber-600 text-lg">R$ {totalCarrinho.toFixed(2)}</span>
+            </div>
+            <button
+              onClick={finalizarAgendamento}
+              className="w-full mt-3 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-xl transition-all shadow-md"
+            >
+              Finalizar agendamento
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DE HORÁRIOS */}
+      {showHorariosModal && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in"
+          onClick={() => setShowHorariosModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-md w-full max-h-[80vh] overflow-y-auto shadow-xl animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="sticky top-0 bg-white/90 backdrop-blur-md border-b px-5 py-4 flex justify-between items-center">
+              <h3 className="font-bold text-stone-800">
+                Escolha um horário para {tempServico?.nome}
+              </h3>
+              <button
+                onClick={() => setShowHorariosModal(false)}
+                className="text-stone-400 hover:text-stone-600 transition"
+              >
+                <X size={20} />
               </button>
-              
-              <p className="text-gray-400 text-xs mt-3 animate-pulse">
-                Clique para fazer seu agendamento
-              </p>
             </div>
-          )}
+            <div className="p-4 grid grid-cols-2 gap-3">
+              {horarios.length === 0 ? (
+                <p className="col-span-2 text-center text-stone-500 py-8">
+                  Nenhum horário disponível.
+                </p>
+              ) : (
+                horarios.map((horario: any, idx: number) => {
+                  const dataFormatada = horario.data
+                    ? new Date(horario.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+                    : '';
+                  return (
+                    <button
+                      key={horario.id}
+                      onClick={() => adicionarAoCarrinho(horario)}
+                      className="bg-stone-50 border border-stone-200 rounded-xl p-3 text-center hover:border-amber-400 hover:bg-amber-50/30 transition-all hover:-translate-y-0.5 animate-fade-in"
+                      style={{ animationDelay: `${idx * 50}ms`, animationFillMode: 'backwards' }}
+                    >
+                      {dataFormatada && (
+                        <div className="text-xs text-stone-400 mb-1">{dataFormatada}</div>
+                      )}
+                      <span className="font-medium text-stone-700">{horario.inicio}</span>
+                      <span className="text-stone-400 text-xs block">até {horario.fim}</span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
         </div>
-
-        {/* Formulário - Só aparece quando showForm é true */}
-        {showForm && (
-          <section className="w-full max-w-md lg:max-w-lg mx-auto">
-            <div className="mb-4 flex justify-between items-center">
-              
-            </div>
-            <AgendamentoPrivadoForm
-              key={formKey}
-              agendamento={null}
-              onSave={handleSaveAgendamento}
-              onCancel={handleCancel}
-              barbeiros={barbeiros}
-              horarios={horarios}
-              procedimentos={procedimentosBarbeiro}
-            />
-          </section>
-        )}
-
-        {/* Diferenciais compactos */}
-        {!showForm && (
-          <section className="w-full max-w-4xl lg:max-w-6xl mx-auto mt-10 lg:mt-12">
-            <div className="text-center mb-6 lg:mb-8">
-              <h2 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-2 lg:mb-3">
-                Nossa Experiência
-              </h2>
-              <div className="w-12 lg:w-16 h-1 bg-gradient-to-r from-[#FFA500] to-[#FF6B00] mx-auto rounded-full"></div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-4">
-              <div className="bg-gradient-to-br from-[#1B1B1B] to-[#2A2A2A] border border-gray-700 rounded-lg p-3 lg:p-4 text-center hover:border-[#FFA500] transition-all duration-300 hover:transform hover:scale-105 group">
-                <div className="text-xl lg:text-2xl mb-2 text-[#FFA500] group-hover:scale-110 transition-transform duration-300">⏰</div>
-                <h3 className="font-bold text-white mb-1 text-sm lg:text-base">Agendamento Simples</h3>
-                <p className="text-gray-400 text-xs lg:text-sm leading-relaxed">
-                  Agende em menos de 2 minutos.
-                </p>
-              </div>
-              
-              <div className="bg-gradient-to-br from-[#1B1B1B] to-[#2A2A2A] border border-gray-700 rounded-lg p-3 lg:p-4 text-center hover:border-[#FFA500] transition-all duration-300 hover:transform hover:scale-105 group">
-                <div className="text-xl lg:text-2xl mb-2 text-[#FFA500] group-hover:scale-110 transition-transform duration-300">👨‍💼</div>
-                <h3 className="font-bold text-white mb-1 text-sm lg:text-base">Mestres da Tesoura</h3>
-                <p className="text-gray-400 text-xs lg:text-sm leading-relaxed">
-                  Profissionais especializados.
-                </p>
-              </div>
-              
-              <div className="bg-gradient-to-br from-[#1B1B1B] to-[#2A2A2A] border border-gray-700 rounded-lg p-3 lg:p-4 text-center hover:border-[#FFA500] transition-all duration-300 hover:transform hover:scale-105 group">
-                <div className="text-xl lg:text-2xl mb-2 text-[#FFA500] group-hover:scale-110 transition-transform duration-300">💫</div>
-                <h3 className="font-bold text-white mb-1 text-sm lg:text-base">Ambiente Exclusivo</h3>
-                <p className="text-gray-400 text-xs lg:text-sm leading-relaxed">
-                  Ambiente climatizado e aconchegante.
-                </p>
-              </div>
-            </div>
-          </section>
-        )}
-      </div>
-
-      {/* Footer compacto */}
-      <footer className="bg-[#0D0D0D] mt-auto">
-        <div className="container mx-auto px-3 py-3">
-          <Footer />
-        </div>
-      </footer>
+      )}
     </div>
   );
 }

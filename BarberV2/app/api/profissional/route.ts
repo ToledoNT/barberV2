@@ -10,6 +10,7 @@ import { GetHorariosByBarbeiroController } from "@/app/controller/horarios/get-b
  * GET - LISTAR PROFISSIONAIS
  * GET - HORÁRIOS (?barbeiroId=123)
  */
+
 export async function GET(req: NextRequest): Promise<NextResponse> {
   try {
     const { searchParams } = new URL(req.url);

@@ -57,12 +57,14 @@ export interface Agendamento {
   criadoEm?: string;
   atualizadoEm?: string;
 
-  // Campos extras que vêm do frontend
   servicoId?: string;
   servicoNome?: string;
   servicoPreco?: number;
+
   profissionalId?: string;
-  profissionalNome?: string;
+
+  // 🔥 SÓ ISSO AQUI RESOLVE TEU ERRO SEM QUEBRAR NADA
+  procedimentoId?: string;
 }
 
 export interface AgendamentoForm {
