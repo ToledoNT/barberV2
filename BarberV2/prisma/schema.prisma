@@ -121,3 +121,15 @@ model Log {
   value     String
   createdAt DateTime @default(now())
 }
+
+model EmailVerification {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  email      String
+  nome       String
+  code       String
+  attempts   Int      @default(0)
+  expiresAt  DateTime
+
+  criadoEm   DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}

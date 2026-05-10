@@ -1,14 +1,24 @@
 import { HorarioDisponivel } from "./agendamentoInterface";
 
 export interface Profissional {
-  id: string;                 
-  nome: string;              
-  email: string;              
-  telefone: string;           
-  procedimentos: Procedimento[]; 
-  horarios: string[];         
-}
+  id: string;
+  nome: string;
+  email: string;
+  telefone: string;
 
+  procedimentos: Procedimento[];
+  horarios: string[] | {
+    id: string;
+    profissionalId: string;
+    data: string;
+    inicio: string;
+    fim: string;
+    disponivel: boolean;
+    criadoEm: string;
+    atualizadoEm: string;
+    profissional?: any;
+  }[];
+}
 export interface ProfissionaisProps {
   profissionais: Profissional[];
   novoProfissional: Omit<Profissional, "id" | "procedimentos">;
@@ -72,8 +82,6 @@ export interface HorarioInputProps {
   value: string;
   onChange: (value: string) => void;
 }
-
-
 
 export interface BarbeiroDadosResponse {
   barbeiroId: string;

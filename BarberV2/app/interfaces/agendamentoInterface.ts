@@ -8,10 +8,14 @@ export interface Procedimento {
   duracaoMinutos?: number;
   label?: string; 
 }
-
-export interface Profissional {
-  id: string;
-  nome: string;
+export interface ItemCarrinho {
+  servico: any;
+  horario: any;
+  pessoaGrupo?: {
+    id: string;
+    nome: string;
+    profissional?: any; 
+  };
 }
 
 export interface Barbeiro {
@@ -63,7 +67,6 @@ export interface Agendamento {
 
   profissionalId?: string;
 
-  // 🔥 SÓ ISSO AQUI RESOLVE TEU ERRO SEM QUEBRAR NADA
   procedimentoId?: string;
 }
 

@@ -35,18 +35,20 @@ export function useAgendamentosAdmin() {
     fetchTodosHorarios();
   }, []);
 
-  const fetchBarbeiros = async () => {
-    const response = await profissionalService.fetchProfissionais();
-    if (Array.isArray(response)) {
-      setBarbeiros(
-        response.map((b: Profissional) => ({
-          id: b.id,
-          nome: b.nome,
-          horarios: b.horarios || [],
-        }))
-      );
-    }
-  };
+const fetchBarbeiros = async () => {
+  const response = await profissionalService.fetchProfissionais();
+  if (Array.isArray(response)) {
+    setBarbeiros(
+      response.map((b: Profissional) => ({
+        id: b.id,
+        nome: b.nome,
+        horarios: Array.isArray(b.horarios)
+          ? b.horarios.map((h: any) => (typeof h === "string" ? h : h.id || ""))
+          : [],
+      }))
+    );
+  }
+};
 
   const fetchAgendamentos = async () => {
     const data = await appointmentService.fetchAppointments();
@@ -146,7 +148,6 @@ export function useAgendamentosAdmin() {
     return response;
   };
 
-  // ✅ Adicionado apenas isto:
   const createHorarioIndividual = async (h: Partial<HorarioDisponivel>) => {
     try {
       const response = await horarioService.createHorarioIndividual(h);
@@ -158,7 +159,6 @@ export function useAgendamentosAdmin() {
       throw new Error(error.message || "Erro ao criar horário individual");
     }
   };
-  // ✅ Fim da adição
 
   const removeHorario = async (id: string) => {
     await horarioService.deleteHorarioDisponivel(id);
@@ -207,6 +207,6 @@ export function useAgendamentosAdmin() {
     fetchTodosHorarios,
     fetchBarbeiroDados,
     handleUpdateStatusAgendamento,
-    createHorarioIndividual, // ✅ apenas essa linha foi adicionada no return
+    createHorarioIndividual,
   };
 }
