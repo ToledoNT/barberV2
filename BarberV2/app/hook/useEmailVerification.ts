@@ -1,8 +1,15 @@
+// hook/useEmailVerification.ts
 import { useState } from "react";
-import { UseEmailVerificationProps } from "../interfaces/emailInterface";
 import { EmailVerificationService } from "../api/emailVerification";
 
 const service = new EmailVerificationService();
+
+type Notify = (msg: string, type?: any) => void;
+
+interface UseEmailVerificationProps {
+  email: string;
+  onSuccess?: () => void;
+}
 
 export function useEmailVerification({
   email,
@@ -15,51 +22,53 @@ export function useEmailVerification({
   const [emailVerificado, setEmailVerificado] = useState(false);
   const [step, setStep] = useState<"email" | "verificacao">("email");
 
-  const enviarCodigo = async (notify: (msg: string, type: any) => void) => {
-  if (!email.trim()) {
-    notify("Digite seu e-mail primeiro", "warning");
-    return false;
-  }
+  // ✅ ENVIA O CÓDIGO + AGENDAMENTO (tudo junto)
+  const enviarCodigo = async (notify?: Notify, agendamentoPayload?: any) => {
+    if (!email?.trim()) {
+      notify?.("Digite seu e-mail primeiro", "warning");
+      return;
+    }
 
-  setEnviandoCodigo(true);
-  try {
-    const nome = email.split("@")[0]; // fallback simples
+    setEnviandoCodigo(true);
 
-    const ok = await service.enviarCodigo(email, nome);
+    try {
+      const nome = email.split("@")[0];
 
-    if (!ok) throw new Error();
+      // Chama o serviço com o payload do agendamento
+      const ok = await service.enviarCodigo(email, nome, agendamentoPayload);
 
-    notify("Código enviado! Verifique seu e-mail.", "success");
-    setCodigoEnviado(true);
-    setStep("verificacao");
-    return true;
-  } catch {
-    notify("Não foi possível enviar o código. Tente novamente.", "error");
-    return false;
-  } finally {
-    setEnviandoCodigo(false);
-  }
-};
+      if (!ok) {
+        notify?.("Não foi possível enviar o código", "error");
+        return;
+      }
 
-  const verificarCodigo = async (notify: (msg: string, type: any) => void) => {
-    if (codigoDigitado.length !== 6) {
-      notify("Digite o código de 6 dígitos", "warning");
-      return false;
+      notify?.("Código enviado! Verifique seu e-mail.", "success");
+      setCodigoEnviado(true);
+      setStep("verificacao");
+    } catch {
+      notify?.("Erro ao enviar código", "error");
+    } finally {
+      setEnviandoCodigo(false);
+    }
+  };
+
+  // ✅ VERIFICA O CÓDIGO (NÃO ENVIA AGENDAMENTO)
+  const verificarCodigo = async (codigo: string, notify?: Notify) => {
+    if (!codigo || codigo.length !== 6) {
+      throw new Error("Digite o código de 6 dígitos");
     }
 
     setVerificando(true);
+
     try {
-      const ok = await service.verificarCodigo(email, codigoDigitado);
+      const ok = await service.verificarCodigo(email, codigo);
+      if (!ok) {
+        throw new Error("Código incorreto ou expirado");
+      }
 
-      if (!ok) throw new Error();
-
-      notify("E-mail verificado com sucesso!", "success");
+      notify?.("E-mail verificado com sucesso!", "success");
       setEmailVerificado(true);
       onSuccess?.();
-      return true;
-    } catch {
-      notify("Código incorreto ou expirado. Tente novamente.", "error");
-      return false;
     } finally {
       setVerificando(false);
     }

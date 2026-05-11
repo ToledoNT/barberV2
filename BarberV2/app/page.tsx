@@ -11,9 +11,7 @@ import {
 
 import { ProfessionalsStep } from "./components/agendamentoPublic/ProfissionalStep";
 import { ServicesStep } from "./components/agendamentoPublic/ServicesStep";
-import { EmailVerification } from "./components/agendamentoPublic/EmailVerification";
 import { CodeVerification } from "./components/agendamentoPublic/CodeVerification";
-import { CustomerDataForm } from "./components/agendamentoPublic/CustomerDataForm";
 import { CartBottomBar } from "./components/agendamentoPublic/BottomActionBar";
 import { HorariosModal } from "./components/agendamentoPublic/HorariosModal";
 import { ConfirmDialog } from "./components/ui/componenteConfirmação";
@@ -21,6 +19,8 @@ import InitialScreen from "./components/agendamentoPublic/initialScreen";
 
 import { useAgendamentoFlow } from "./hook/useAgendamentoFlow";
 import { useEmailVerification } from "./hook/useEmailVerification";
+import { EmailVerification } from "./components/agendamentoPublic/EmailVerification";
+import { SuccessScreen } from "./components/agendamentoPublic/SucessScreen";
 
 /* =========================================================
    TYPES
@@ -115,7 +115,6 @@ function GroupMembersStep({
           </button>
         </div>
 
-        {/* Barra de progresso */}
         <div className="px-4 pt-3">
           <div className="flex gap-1">
             {pessoas.map((pessoa) => {
@@ -229,11 +228,76 @@ export default function Home() {
   const [pessoaSelecionada, setPessoaSelecionada] = useState<PessoaGrupo | null>(null);
   const [profissionalSelecionadoGrupo, setProfissionalSelecionadoGrupo] = useState<any>(null);
   const [grupoAgendamentos, setGrupoAgendamentos] = useState<GrupoAgendamento[]>([]);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // Email
+  // ----------------------------------------------------------------------
+  // 1. FUNÇÃO QUE MONTA O PAYLOAD DO AGENDAMENTO E ENVIA JUNTO COM O CÓDIGO
+  // ----------------------------------------------------------------------
+  const handleEnviarCodigo = async () => {
+    let agendamentoPayload: any;
+
+    if (tipoAgendamento === "normal") {
+      if (carrinho.length === 0) {
+        notify("Nenhum serviço selecionado.", "warning");
+        return;
+      }
+      const agendamento = carrinho[0];
+      agendamentoPayload = {
+        tipo: "normal",
+        cliente: {
+          nome: cliente.nome,
+          email: cliente.email,
+        },
+        servico: agendamento.servico,
+        profissional: agendamento.profissional,
+        horario: agendamento.horario,
+      };
+    } else {
+      // grupo
+      if (grupoAgendamentos.length === 0) {
+        notify("Nenhum agendamento configurado para o grupo.", "warning");
+        return;
+      }
+      const participantes = grupoAgendamentos.map((item) => ({
+        pessoaId: item.pessoaId,
+        pessoaNome: item.pessoaNome,
+        servico: item.servico,
+        profissional: item.profissional,
+        horario: item.horario,
+      }));
+      agendamentoPayload = {
+        tipo: "grupo",
+        cliente: {
+          nome: cliente.nome,
+          email: cliente.email,
+        },
+        participantes,
+      };
+    }
+
+    // 🔥 Envia o código e os dados do agendamento juntos (uma única requisição)
+    await emailVerification.enviarCodigo(notify, agendamentoPayload);
+  };
+
+  // ----------------------------------------------------------------------
+  // 2. APÓS O CÓDIGO SER VERIFICADO COM SUCESSO
+  // ----------------------------------------------------------------------
+  const handleEmailVerified = async () => {
+    try {
+      // Se o backend já confirmou o agendamento, finalizarAgendamento pode ser apenas um refresh
+      await finalizarAgendamento();
+      setShowSuccess(true);
+    } catch (err) {
+      notify("Erro ao finalizar agendamento. Tente novamente.", "error");
+    }
+  };
+
+  // ----------------------------------------------------------------------
+  // 3. HOOK DE VERIFICAÇÃO DE E-MAIL (JÁ AJUSTADO PARA ACEITAR PAYLOAD)
+  // ----------------------------------------------------------------------
   const emailVerification = useEmailVerification({
     email: cliente.email,
-    onSuccess: () => setCartSubStep("dados"),
+    onSuccess: handleEmailVerified,
   });
 
   // Horários bloqueados (para grupo)
@@ -301,7 +365,6 @@ export default function Home() {
     pessoasGrupo.every((pessoa) => grupoAgendamentos.some((a) => a.pessoaId === pessoa.id && a.completo));
   const podeAvancarGrupo = todosGrupoCompletos && pessoasGrupo.length >= 2;
 
-  // Helper text para o botão desabilitado
   const avisoGrupo = !podeAvancarGrupo ? (
     pessoasGrupo.length < 2 ? (
       <p className="text-xs text-amber-600 text-center mt-2">
@@ -314,7 +377,7 @@ export default function Home() {
     ) : null
   ) : null;
 
-  // Loading e erro
+  // Loading e error
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-white">
       <Loader2 size={40} className="animate-spin text-amber-600" />
@@ -331,6 +394,10 @@ export default function Home() {
       </div>
     </div>
   );
+
+  if (showSuccess) {
+    return <SuccessScreen onClose={() => window.location.reload()} />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
@@ -360,7 +427,6 @@ export default function Home() {
 
       {mainScreen === "agendamento" && (
         <>
-          {/* Cabeçalho */}
           <div className="pt-6 pb-3 px-5 text-center border-b border-stone-100">
             <h1 className="text-2xl font-bold text-stone-900">Kings Barber</h1>
             <p className="text-stone-500 text-xs mt-0.5">
@@ -368,9 +434,7 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Conteúdo principal */}
           <div className={`flex-1 w-full max-w-sm mx-auto px-4 ${step === "carrinho" ? "pb-28" : "pb-36"}`}>
-            {/* MEMBROS (grupo) */}
             {step === "membros" && tipoAgendamento === "grupo" && (
               <GroupMembersStep
                 pessoas={pessoasGrupo}
@@ -385,7 +449,6 @@ export default function Home() {
               />
             )}
 
-            {/* PROFISSIONAIS */}
             {step === "profissionais" && (
               <div className="space-y-4">
                 <BackButton onClick={() => tipoAgendamento === "grupo" ? setStep("membros") : setMainScreen("escolha")} />
@@ -400,7 +463,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* SERVIÇOS */}
             {step === "servicos" && (
               <div className="space-y-4">
                 <BackButton onClick={() => setStep("profissionais")} />
@@ -419,18 +481,21 @@ export default function Home() {
               </div>
             )}
 
-            {/* CARRINHO (email, verificação, dados) */}
             {step === "carrinho" && (
               <div className="space-y-3">
                 {cartSubStep === "email" && (
                   <EmailVerification
                     nome={cliente.nome}
                     email={cliente.email}
-                    onNomeChange={(nome) => setCliente({ ...cliente, nome })}
-                    onEmailChange={(email) => setCliente({ ...cliente, email })}
-                    onEnviarCodigo={() => emailVerification.enviarCodigo(notify)}
+                    onNomeChange={(nome) => setCliente((prev) => ({ ...prev, nome }))}
+                    onEmailChange={(email) => setCliente((prev) => ({ ...prev, email }))}
+                    onEnviarCodigo={handleEnviarCodigo}
+                    onVerificarCodigo={(codigo: string) =>
+                      emailVerification.verificarCodigo(codigo, notify)
+                    }
                     onVoltar={() => setStep("servicos")}
                     enviando={emailVerification.enviandoCodigo}
+                    verificando={emailVerification.verificando}
                     disabled={false}
                   />
                 )}
@@ -439,7 +504,9 @@ export default function Home() {
                     email={cliente.email}
                     codigo={emailVerification.codigoDigitado}
                     onCodigoChange={emailVerification.setCodigoDigitado}
-                    onVerificar={() => emailVerification.verificarCodigo(notify)}
+                    onVerificar={() =>
+                      emailVerification.verificarCodigo(emailVerification.codigoDigitado, notify)
+                    }
                     onCorrigirEmail={() => {
                       emailVerification.reset();
                       setCartSubStep("email");
@@ -447,20 +514,10 @@ export default function Home() {
                     verificando={emailVerification.verificando}
                   />
                 )}
-                {cartSubStep === "dados" && (
-                  <CustomerDataForm
-                    nome={cliente.nome}
-                    telefone={cliente.telefone}
-                    onNomeChange={(nome) => setCliente({ ...cliente, nome })}
-                    onTelefoneChange={(telefone) => setCliente({ ...cliente, telefone })}
-                    onRemoverServico={removerDoCarrinho}
-                  />
-                )}
               </div>
             )}
           </div>
 
-          {/* BOTTOM BAR (fixa) */}
           <div className="fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none">
             <div className="w-full max-w-sm pointer-events-auto px-4 pb-5">
               {step === "servicos" && tipoAgendamento === "normal" && carrinho.length > 0 && (
@@ -488,27 +545,11 @@ export default function Home() {
                   {avisoGrupo}
                 </>
               )}
-
-              {step === "carrinho" && cartSubStep === "dados" && (
-                <CartBottomBar
-                  nomeServico={
-                    tipoAgendamento === "grupo"
-                      ? `${grupoAgendamentos.length} agendamentos`
-                      : carrinho[0]?.servico?.nome || ""
-                  }
-                  horarioStr={tipoAgendamento === "grupo" ? "Grupo" : formatHorarioCompleto(carrinho[0]?.horario)}
-                  valor={totalCarrinho}
-                  total={totalCarrinho}
-                  onFinalizar={finalizarAgendamento}
-                  buttonLabel="Finalizar"
-                />
-              )}
             </div>
           </div>
         </>
       )}
 
-      {/* MODAL DE HORÁRIOS */}
       <HorariosModal
         isOpen={showHorariosModal}
         servicoNome={tempServico?.nome}

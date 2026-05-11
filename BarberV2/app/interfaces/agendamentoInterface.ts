@@ -11,10 +11,11 @@ export interface Procedimento {
 export interface ItemCarrinho {
   servico: any;
   horario: any;
+  profissional?: any;          // ✅ adicione esta linha
   pessoaGrupo?: {
     id: string;
     nome: string;
-    profissional?: any; 
+    profissional?: any;
   };
 }
 

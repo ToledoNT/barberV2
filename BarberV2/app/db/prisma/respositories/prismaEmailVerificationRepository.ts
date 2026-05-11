@@ -11,6 +11,7 @@ interface ICreateEmailVerification {
 }
 
 export class PrismaEmailVerificationRepository {
+
   async create(
     data: ICreateEmailVerification
   ): Promise<ResponseTemplateInterface> {
@@ -43,39 +44,61 @@ export class PrismaEmailVerificationRepository {
     }
   }
 
-//   async getByEmail(email: string): Promise<ResponseTemplateInterface> {
-//     try {
-//       const verification = await prisma.emailVerification.findFirst({
-//         where: { email },
-//         orderBy: {
-//           createdAt: "desc",
-//         },
-//       });
+async findByEmail(email: string) {
+  try {
+    return await prisma.emailVerification.findFirst({
+      where: { email },
+      orderBy: { criadoEm: "desc" }, // corrigido aqui
+    });
+  } catch (error) {
+    console.error("Erro ao buscar verificação:", error);
+    return null;
+  }
+}
 
-//       if (!verification) {
-//         return new ResponseTemplateModel(
-//           false,
-//           404,
-//           "Código não encontrado",
-//           []
-//         );
-//       }
+async incrementAttempts(email: string) {
+  const verification = await prisma.emailVerification.findFirst({
+    where: { email },
+    orderBy: { criadoEm: "desc" },
+  });
 
-//       return new ResponseTemplateModel(
-//         true,
-//         200,
-//         "Código encontrado com sucesso",
-//         verification
-//       );
-//     } catch (error: any) {
-//       console.error("Erro ao buscar código de verificação:", error);
+  if (!verification) {
+    throw new Error("Verification not found");
+  }
 
-//       return new ResponseTemplateModel(
-//         false,
-//         500,
-//         "Erro interno ao buscar código",
-//         []
-//       );
-//     }
-  //}
+  const updated = await prisma.emailVerification.update({
+    where: { id: verification.id },
+    data: {
+      attempts: {
+        increment: 1,
+      },
+    },
+  });
+
+  return updated;
+}
+
+  async deleteByEmail(email: string) {
+  try {
+    const deleted = await prisma.emailVerification.deleteMany({
+      where: { email },
+    });
+
+    return {
+      status: true,
+      message: "Código removido com sucesso",
+      data: deleted,
+      code: 200,
+    };
+  } catch (error) {
+    console.error("Erro ao deletar verificação:", error);
+
+    return {
+      status: false,
+      message: "Erro ao remover código",
+      data: null,
+      code: 500,
+    };
+  }
+}
 }

@@ -1,4 +1,4 @@
-import { EnviarCodigoUseCase } from "@/app/use-case/agendamento/email-verify-create-code-use-case";
+import { EnviarCodigoUseCase } from "@/app/use-case/agendamento/email-generate-code-agendamento-use-case";
 
 export class EnviarCodigoController {
   async handle(email: string, nome: string) {

@@ -8,13 +8,15 @@ const api = axios.create({
 });
 
 export class EmailVerificationService {
-  async enviarCodigo(email: string, nome: string): Promise<boolean> {
+  // 🔥 MODIFICADO: agora aceita um terceiro parâmetro opcional "agendamento"
+  async enviarCodigo(email: string, nome: string, agendamento?: any): Promise<boolean> {
     try {
       const response = await api.post<
         ResponseTemplateInterface<null>
       >("/emailverify", {
         email,
         nome,
+        agendamento,  // envia o payload do agendamento junto
       });
 
       return response.data.status === true;
@@ -26,9 +28,9 @@ export class EmailVerificationService {
 
   async verificarCodigo(email: string, codigo: string): Promise<boolean> {
     try {
-      const response = await api.post<
+      const response = await api.put<
         ResponseTemplateInterface<null>
-      >("/verificar-codigo", {
+      >("/emailverify", {
         email,
         codigo,
       });
