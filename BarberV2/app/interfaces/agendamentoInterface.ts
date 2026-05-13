@@ -8,14 +8,37 @@ export interface Procedimento {
   duracaoMinutos?: number;
   label?: string; 
 }
+
+interface ServicoCarrinho {
+  id: string;
+  nome: string;
+  valor: number;
+}
+
+interface HorarioCarrinho {
+  id: string;
+  data: string;
+  inicio: string;
+  fim: string;
+}
+
+interface ProfissionalCarrinho {
+  id: string;
+  nome: string;
+}
+
 export interface ItemCarrinho {
-  servico: any;
-  horario: any;
-  profissional?: any;          // ✅ adicione esta linha
+  servico: ServicoCarrinho;
+
+  horario: HorarioCarrinho;
+
+  profissional?: ProfissionalCarrinho;
+
   pessoaGrupo?: {
     id: string;
     nome: string;
-    profissional?: any;
+
+    profissional?: ProfissionalCarrinho;
   };
 }
 

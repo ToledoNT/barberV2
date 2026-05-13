@@ -43,3 +43,13 @@ export interface IBarbeiro {
   nome: string;
   horarios: IHorarioDisponivel[];
 }
+
+export interface ICreateEmailVerification {
+  email: string;
+  nome: string;
+  code: string;
+  expiresAt: Date;
+  attempts: number;
+  tipo: "normal" | "grupo"; 
+  payload: any;
+}

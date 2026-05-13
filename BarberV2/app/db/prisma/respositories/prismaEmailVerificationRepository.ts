@@ -1,104 +1,117 @@
 import { prisma } from "../prisma-connection";
 import { ResponseTemplateModel } from "../../../../../../KingsBarberShopBackend/src/model/response-templete-model";
 import { ResponseTemplateInterface } from "../../../../../../KingsBarberShopBackend/src/interface/response-template-interface";
-
-interface ICreateEmailVerification {
-  email: string;
-  nome: string;
-  code: string;
-  expiresAt: Date;
-  attempts: number;
-}
+import { ICreateEmailVerification } from "@/app/interfaces/agendamentos/create-agendamento-interface";
 
 export class PrismaEmailVerificationRepository {
 
-  async create(
-    data: ICreateEmailVerification
-  ): Promise<ResponseTemplateInterface> {
+  async create(data: ICreateEmailVerification): Promise<ResponseTemplateInterface> {
     try {
-      const verification = await prisma.emailVerification.create({
+      const verification = await prisma.preScheduling.create({
         data: {
           email: data.email,
           nome: data.nome,
           code: data.code,
           expiresAt: data.expiresAt,
-          attempts: data.attempts,
+          attempts: data.attempts ?? 0,
+          tipo: data.tipo,
+          payload: data.payload ?? {},
         },
       });
 
       return new ResponseTemplateModel(
         true,
         201,
-        "Código de verificação criado com sucesso",
+        "Código criado com sucesso",
         verification
       );
     } catch (error: any) {
-      console.error("Erro ao criar verificação de email:", error);
+      console.error("Erro ao criar verificação:", error);
 
-      return new ResponseTemplateModel(
-        false,
-        500,
-        "Erro interno ao criar código de verificação",
-        []
-      );
+      return new ResponseTemplateModel(false, 500, "Erro interno", []);
     }
   }
-
-async findByEmail(email: string) {
+async findLastByEmail(email: string) {
   try {
-    return await prisma.emailVerification.findFirst({
+    return await prisma.preScheduling.findFirst({
       where: { email },
-      orderBy: { criadoEm: "desc" }, // corrigido aqui
+      orderBy: { criadoEm: "desc" },
     });
   } catch (error) {
-    console.error("Erro ao buscar verificação:", error);
+    console.error("Erro ao buscar:", error);
     return null;
   }
 }
+  async update(id: string, data: Partial<ICreateEmailVerification>) {
+    try {
+      const updated = await prisma.preScheduling.update({
+        where: { id },
+        data: {
+          ...(data.email && { email: data.email }),
+          ...(data.nome && { nome: data.nome }),
+          ...(data.code && { code: data.code }),
+          ...(data.expiresAt && { expiresAt: data.expiresAt }),
+          ...(data.attempts !== undefined && { attempts: data.attempts }),
+          ...(data.tipo && { tipo: data.tipo }),
+          ...(data.payload && { payload: data.payload }),
+        },
+      });
 
-async incrementAttempts(email: string) {
-  const verification = await prisma.emailVerification.findFirst({
-    where: { email },
-    orderBy: { criadoEm: "desc" },
-  });
+      return new ResponseTemplateModel(
+        true,
+        200,
+        "Código atualizado com sucesso",
+        updated
+      );
+    } catch (error) {
+      console.error("Erro ao atualizar:", error);
 
-  if (!verification) {
-    throw new Error("Verification not found");
+      return new ResponseTemplateModel(false, 500, "Erro ao atualizar", []);
+    }
   }
 
-  const updated = await prisma.emailVerification.update({
-    where: { id: verification.id },
-    data: {
-      attempts: {
-        increment: 1,
-      },
-    },
-  });
+  async incrementAttempts(email: string) {
+    try {
+      const verification = await prisma.preScheduling.findFirst({
+        where: { email },
+        orderBy: { criadoEm: "desc" },
+      });
 
-  return updated;
-}
+      if (!verification) throw new Error("Not found");
+
+      return await prisma.preScheduling.update({
+        where: { id: verification.id },
+        data: {
+          attempts: { increment: 1 },
+        },
+      });
+    } catch (error) {
+      console.error("Erro increment attempts:", error);
+      throw error;
+    }
+  }
 
   async deleteByEmail(email: string) {
-  try {
-    const deleted = await prisma.emailVerification.deleteMany({
-      where: { email },
-    });
+    try {
+      const deleted = await prisma.preScheduling.deleteMany({
+        where: { email },
+      });
 
-    return {
-      status: true,
-      message: "Código removido com sucesso",
-      data: deleted,
-      code: 200,
-    };
-  } catch (error) {
-    console.error("Erro ao deletar verificação:", error);
+      return {
+        status: true,
+        message: "Removido com sucesso",
+        data: deleted,
+        code: 200,
+      };
+    } catch (error) {
+      console.error("Erro ao deletar:", error);
 
-    return {
-      status: false,
-      message: "Erro ao remover código",
-      data: null,
-      code: 500,
-    };
+      return {
+        status: false,
+        message: "Erro ao remover",
+        data: null,
+        code: 500,
+      };
+    }
   }
-}
 }

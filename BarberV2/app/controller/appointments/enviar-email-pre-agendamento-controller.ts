@@ -1,7 +1,11 @@
-import { EnviarCodigoUseCase } from "@/app/use-case/agendamento/email-generate-code-agendamento-use-case";
+import { EnviarPreAgendamentoUseCase } from "@/app/use-case/agendamento/pre-agendamento-generate-code";
 
 export class EnviarCodigoController {
-  async handle(email: string, nome: string) {
+  async handle(
+    email: string,
+    nome: string,
+    agendamento?: any
+  ) {
     try {
       if (!email) {
         return {
@@ -12,9 +16,13 @@ export class EnviarCodigoController {
         };
       }
 
-      const useCase = new EnviarCodigoUseCase();
+      const useCase = new EnviarPreAgendamentoUseCase();
 
-      const response = await useCase.execute(email, nome);
+      const response = await useCase.execute(
+        email,
+        nome,
+        agendamento 
+      );
 
       return response;
     } catch (error) {

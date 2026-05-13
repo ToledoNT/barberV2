@@ -231,8 +231,31 @@ export default function Home() {
   const [showSuccess, setShowSuccess] = useState(false);
 
   // ----------------------------------------------------------------------
-  // 1. FUNÇÃO QUE MONTA O PAYLOAD DO AGENDAMENTO E ENVIA JUNTO COM O CÓDIGO
+  // CALLBACK DE SUCESSO
   // ----------------------------------------------------------------------
+
+  const handleEmailVerified = async () => {
+    try {
+      await finalizarAgendamento();
+      setShowSuccess(true);
+    } catch (err) {
+      notify("Erro ao finalizar agendamento.", "error");
+    }
+  };
+
+  // ----------------------------------------------------------------------
+  // HOOK DE VERIFICAÇÃO DE EMAIL
+  // ----------------------------------------------------------------------
+
+  const emailVerification = useEmailVerification({
+    email: cliente.email,
+    onSuccess: handleEmailVerified,
+  });
+
+  // ----------------------------------------------------------------------
+  // ENVIO DO CÓDIGO + PAYLOAD
+  // ----------------------------------------------------------------------
+
   const handleEnviarCodigo = async () => {
     let agendamentoPayload: any;
 
@@ -241,65 +264,81 @@ export default function Home() {
         notify("Nenhum serviço selecionado.", "warning");
         return;
       }
+
       const agendamento = carrinho[0];
+
       agendamentoPayload = {
         tipo: "normal",
+
         cliente: {
           nome: cliente.nome,
           email: cliente.email,
         },
-        servico: agendamento.servico,
-        profissional: agendamento.profissional,
-        horario: agendamento.horario,
+
+        servico: {
+          id: agendamento.servico?.id,
+          nome: agendamento.servico?.nome,
+          valor: agendamento.servico?.valor,
+        },
+
+        profissional: {
+          id: agendamento.profissional?.id,
+          nome: agendamento.profissional?.nome,
+        },
+
+        horario: {
+          id: agendamento.horario?.id,
+          data: agendamento.horario?.data,
+          inicio: agendamento.horario?.inicio,
+          fim: agendamento.horario?.fim,
+        },
       };
     } else {
-      // grupo
       if (grupoAgendamentos.length === 0) {
         notify("Nenhum agendamento configurado para o grupo.", "warning");
         return;
       }
+
       const participantes = grupoAgendamentos.map((item) => ({
         pessoaId: item.pessoaId,
         pessoaNome: item.pessoaNome,
-        servico: item.servico,
-        profissional: item.profissional,
-        horario: item.horario,
+
+        servico: {
+          id: item.servico?.id,
+          nome: item.servico?.nome,
+          valor: item.servico?.valor,
+        },
+
+        profissional: {
+          id: item.profissional?.id,
+          nome: item.profissional?.nome,
+        },
+
+        horario: {
+          id: item.horario?.id,
+          data: item.horario?.data,
+          inicio: item.horario?.inicio,
+          fim: item.horario?.fim,
+        },
       }));
+
       agendamentoPayload = {
         tipo: "grupo",
+
         cliente: {
           nome: cliente.nome,
           email: cliente.email,
         },
+
         participantes,
       };
     }
 
-    // 🔥 Envia o código e os dados do agendamento juntos (uma única requisição)
-    await emailVerification.enviarCodigo(notify, agendamentoPayload);
+    await emailVerification.enviarCodigo(
+      notify,
+      agendamentoPayload
+    );
   };
-
-  // ----------------------------------------------------------------------
-  // 2. APÓS O CÓDIGO SER VERIFICADO COM SUCESSO
-  // ----------------------------------------------------------------------
-  const handleEmailVerified = async () => {
-    try {
-      // Se o backend já confirmou o agendamento, finalizarAgendamento pode ser apenas um refresh
-      await finalizarAgendamento();
-      setShowSuccess(true);
-    } catch (err) {
-      notify("Erro ao finalizar agendamento. Tente novamente.", "error");
-    }
-  };
-
-  // ----------------------------------------------------------------------
-  // 3. HOOK DE VERIFICAÇÃO DE E-MAIL (JÁ AJUSTADO PARA ACEITAR PAYLOAD)
-  // ----------------------------------------------------------------------
-  const emailVerification = useEmailVerification({
-    email: cliente.email,
-    onSuccess: handleEmailVerified,
-  });
-
   // Horários bloqueados (para grupo)
   const horariosBloqueados = useMemo(() => {
     return grupoAgendamentos.map((item) => `${item?.horario?.data}-${item?.horario?.inicio}`);

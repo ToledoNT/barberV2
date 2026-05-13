@@ -18,7 +18,9 @@ interface Props {
   onNomeChange: (nome: string) => void;
   onEmailChange: (email: string) => void;
   onEnviarCodigo: () => Promise<void>;
-  onVerificarCodigo: (codigo: string) => Promise<void>;
+
+  onVerificarCodigo?: (codigo: string) => Promise<void>;
+
   onReenviarCodigo?: () => Promise<void>;
   onVoltar?: () => void;
   enviando: boolean;
@@ -116,8 +118,9 @@ export function EmailVerification({
     if (!codigo || codigo.length < 6) return;
     setCodigoError(null); // limpa erro anterior
     try {
-      await onVerificarCodigo(codigo);
-      // Se chegou aqui, o código está correto – a navegação deve ser feita pelo pai
+if (!onVerificarCodigo) return;
+
+await onVerificarCodigo(codigo);      // Se chegou aqui, o código está correto – a navegação deve ser feita pelo pai
     } catch (error) {
       // Assumimos que o erro veio do backend (código inválido, expirado, etc.)
       setCodigoError(
