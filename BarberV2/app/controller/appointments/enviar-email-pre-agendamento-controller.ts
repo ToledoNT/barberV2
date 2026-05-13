@@ -21,7 +21,7 @@ export class EnviarCodigoController {
       const response = await useCase.execute(
         email,
         nome,
-        agendamento 
+        agendamento   
       );
 
       return response;

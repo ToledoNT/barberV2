@@ -4,14 +4,13 @@ import { PrismaEmailVerificationRepository } from "@/app/db/prisma/respositories
 interface IRequest {
   email: string;
   codigo: string;
-  agendamento: any;
 }
 
 export class VerificarCodigoUseCase {
-  async execute({ email, codigo, agendamento }: IRequest) {
+  async execute({ email, codigo }: IRequest) {
     const repository = new PrismaEmailVerificationRepository();
 
-    const verification = await repository.findByEmail(email);
+    const verification = await repository.findLastByEmail(email);
 
     if (!verification) {
       return {
@@ -21,7 +20,6 @@ export class VerificarCodigoUseCase {
       };
     }
 
-    // ⏱️ EXPIRAÇÃO (5 minutos)
     if (new Date() > verification.expiresAt) {
       await repository.deleteByEmail(email);
 
@@ -32,13 +30,11 @@ export class VerificarCodigoUseCase {
       };
     }
 
-    // 🔐 VALIDAÇÃO DO CÓDIGO
     const isValid = await bcrypt.compare(codigo, verification.code);
 
     if (!isValid) {
       const updated = await repository.incrementAttempts(email);
 
-      // 🚨 bloqueia após 5 tentativas
       if (updated.attempts >= 5) {
         await repository.deleteByEmail(email);
 
@@ -55,17 +51,15 @@ export class VerificarCodigoUseCase {
         code: 400,
       };
     }
-    
-    await repository.deleteByEmail(email);
 
-    return {
-      status: true,
-      message: "Código validado com sucesso",
-      code: 200,
-      data: {
-        email,
-        agendamento,
-      },
-    };
+return {
+  status: true,
+  message: "Código validado com sucesso",
+  code: 200,
+  data: {
+    email,
+    payload: verification.payload,
+  },
+};
   }
 }

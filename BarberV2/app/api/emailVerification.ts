@@ -16,7 +16,7 @@ export class EmailVerificationService {
       >("/emailverify", {
         email,
         nome,
-        agendamento,  // envia o payload do agendamento junto
+        agendamento,  
       });
 
       return response.data.status === true;

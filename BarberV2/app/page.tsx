@@ -22,10 +22,6 @@ import { useEmailVerification } from "./hook/useEmailVerification";
 import { EmailVerification } from "./components/agendamentoPublic/EmailVerification";
 import { SuccessScreen } from "./components/agendamentoPublic/SucessScreen";
 
-/* =========================================================
-   TYPES
-========================================================= */
-
 interface PessoaGrupo {
   id: string;
   nome: string;
@@ -39,10 +35,6 @@ interface GrupoAgendamento {
   horario?: any;
   completo: boolean;
 }
-
-/* =========================================================
-   HELPERS
-========================================================= */
 
 function formatMoney(value: number | string) {
   const numero = Number(value || 0);
@@ -59,10 +51,6 @@ function formatHorarioCompleto(horario: any) {
   return `${dia}/${mes}/${ano} ${horario.inicio}`;
 }
 
-/* =========================================================
-   BOTÃO VOLTAR REUTILIZÁVEL
-========================================================= */
-
 function BackButton({ onClick, label = "Voltar" }: { onClick: () => void; label?: string }) {
   return (
     <button
@@ -74,10 +62,6 @@ function BackButton({ onClick, label = "Voltar" }: { onClick: () => void; label?
     </button>
   );
 }
-
-/* =========================================================
-   MEMBROS (GRUPO) - VERSÃO COMPACTA
-========================================================= */
 
 function GroupMembersStep({
   pessoas,
@@ -185,13 +169,10 @@ function GroupMembersStep({
   );
 }
 
-/* =========================================================
-   PÁGINA PRINCIPAL (HOME)
-========================================================= */
-
 export default function Home() {
   const flow = useAgendamentoFlow();
 
+  // ✅ selectedProfissional deve estar disponível no hook
   const {
     mainScreen,
     step,
@@ -213,6 +194,7 @@ export default function Home() {
     setTempServico,
     setConfirmDialog,
     setSelectedProfissional,
+    selectedProfissional,      
     setStep,
     setMainScreen,
     adicionarAoCarrinho,
@@ -222,17 +204,12 @@ export default function Home() {
     notify,
   } = flow;
 
-  // Estados do grupo
   const [tipoAgendamento, setTipoAgendamento] = useState<"normal" | "grupo">("normal");
   const [pessoasGrupo, setPessoasGrupo] = useState<PessoaGrupo[]>([{ id: crypto.randomUUID(), nome: "" }]);
   const [pessoaSelecionada, setPessoaSelecionada] = useState<PessoaGrupo | null>(null);
   const [profissionalSelecionadoGrupo, setProfissionalSelecionadoGrupo] = useState<any>(null);
   const [grupoAgendamentos, setGrupoAgendamentos] = useState<GrupoAgendamento[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
-
-  // ----------------------------------------------------------------------
-  // CALLBACK DE SUCESSO
-  // ----------------------------------------------------------------------
 
   const handleEmailVerified = async () => {
     try {
@@ -243,18 +220,11 @@ export default function Home() {
     }
   };
 
-  // ----------------------------------------------------------------------
-  // HOOK DE VERIFICAÇÃO DE EMAIL
-  // ----------------------------------------------------------------------
-
   const emailVerification = useEmailVerification({
     email: cliente.email,
     onSuccess: handleEmailVerified,
   });
 
-  // ----------------------------------------------------------------------
-  // ENVIO DO CÓDIGO + PAYLOAD
-  // ----------------------------------------------------------------------
 
   const handleEnviarCodigo = async () => {
     let agendamentoPayload: any;
@@ -269,23 +239,19 @@ export default function Home() {
 
       agendamentoPayload = {
         tipo: "normal",
-
         cliente: {
           nome: cliente.nome,
           email: cliente.email,
         },
-
         servico: {
           id: agendamento.servico?.id,
           nome: agendamento.servico?.nome,
           valor: agendamento.servico?.valor,
         },
-
         profissional: {
           id: agendamento.profissional?.id,
           nome: agendamento.profissional?.nome,
         },
-
         horario: {
           id: agendamento.horario?.id,
           data: agendamento.horario?.data,
@@ -302,18 +268,15 @@ export default function Home() {
       const participantes = grupoAgendamentos.map((item) => ({
         pessoaId: item.pessoaId,
         pessoaNome: item.pessoaNome,
-
         servico: {
           id: item.servico?.id,
           nome: item.servico?.nome,
           valor: item.servico?.valor,
         },
-
         profissional: {
           id: item.profissional?.id,
           nome: item.profissional?.nome,
         },
-
         horario: {
           id: item.horario?.id,
           data: item.horario?.data,
@@ -324,22 +287,17 @@ export default function Home() {
 
       agendamentoPayload = {
         tipo: "grupo",
-
         cliente: {
           nome: cliente.nome,
           email: cliente.email,
         },
-
         participantes,
       };
     }
 
-    await emailVerification.enviarCodigo(
-      notify,
-      agendamentoPayload
-    );
+    await emailVerification.enviarCodigo(notify, agendamentoPayload);
   };
-  // Horários bloqueados (para grupo)
+
   const horariosBloqueados = useMemo(() => {
     return grupoAgendamentos.map((item) => `${item?.horario?.data}-${item?.horario?.inicio}`);
   }, [grupoAgendamentos]);
@@ -351,7 +309,6 @@ export default function Home() {
     });
   }, [horariosDisponiveis, horariosBloqueados]);
 
-  // Funções do grupo
   function adicionarPessoaGrupo() {
     setPessoasGrupo((prev) => [...prev, { id: crypto.randomUUID(), nome: "" }]);
   }
@@ -373,8 +330,8 @@ export default function Home() {
 
     adicionarAoCarrinho({
       servico: tempServico,
-      horario,
       profissional: profissionalSelecionadoGrupo,
+      horario: horario,
       pessoaGrupo: { id: pessoaSelecionada.id, nome: pessoaSelecionada.nome },
     });
 
@@ -595,8 +552,20 @@ export default function Home() {
         horarios={tipoAgendamento === "grupo" ? horariosFiltrados : horariosDisponiveis}
         onClose={() => setShowHorariosModal(false)}
         onSelectHorario={(horario) => {
-          if (tipoAgendamento === "normal") adicionarAoCarrinho(horario);
-          else salvarAgendamentoGrupo(horario);
+          if (tipoAgendamento === "normal") {
+            if (!tempServico || !selectedProfissional) {
+              notify("Selecione um serviço e um profissional antes de escolher o horário.", "warning");
+              return;
+            }
+            adicionarAoCarrinho({
+              servico: tempServico,
+              profissional: selectedProfissional,
+              horario: horario,
+            });
+            setShowHorariosModal(false);
+          } else {
+            salvarAgendamentoGrupo(horario);
+          }
         }}
       />
     </div>

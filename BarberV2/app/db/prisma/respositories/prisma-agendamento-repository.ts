@@ -22,7 +22,7 @@ export class PrismaAppointmentRepository {
       const appointment = await prisma.agendamento.create({
         data: {
           nome: data.nome,
-          telefone: data.telefone,
+          telefone: data.telefone || "sem telefone",
           email: data.email?.trim() || "sem email",
           data: new Date(data.data),
           inicio: data.inicio, 

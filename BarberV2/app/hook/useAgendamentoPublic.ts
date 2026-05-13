@@ -12,7 +12,6 @@ export function useAgendamentoPublic() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // ---------------- LOAD DATA ----------------
   const loadData = async () => {
     try {
       setLoading(true);
@@ -28,7 +27,6 @@ export function useAgendamentoPublic() {
     }
   };
 
-  // ---------------- CREATE APPOINTMENT ----------------
   const addAgendamento = async (
     agendamento: Partial<Agendamento>
   ) => {

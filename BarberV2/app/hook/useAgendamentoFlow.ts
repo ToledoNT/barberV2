@@ -1,6 +1,5 @@
-// hook/useAgendamentoFlow.ts
 import { useState } from "react";
-import { Agendamento, ItemCarrinho } from "../interfaces/agendamentoInterface";
+import { Agendamento } from "../interfaces/agendamentoInterface";
 import { useAgendamentoPublic } from "./useAgendamentoPublic";
 
 export type Step = "membros" | "profissionais" | "servicos" | "carrinho";
@@ -15,7 +14,7 @@ export function useAgendamentoFlow() {
   const [cartSubStep, setCartSubStep] = useState<CartSubStep>("email");
 
   const [selectedProfissional, setSelectedProfissional] = useState<any>(null);
-  const [carrinho, setCarrinho] = useState<ItemCarrinho[]>([]);
+  const [carrinho, setCarrinho] = useState<any[]>([]);
   const [tempServico, setTempServico] = useState<any>(null);
   const [showHorariosModal, setShowHorariosModal] = useState(false);
 
@@ -50,12 +49,24 @@ export function useAgendamentoFlow() {
     notify("Serviço removido. Você pode escolher outro.", "info");
   };
 
-  const adicionarAoCarrinho = (horario: any, pessoaGrupo?: { id: string; nome: string }) => {
-    if (!tempServico) return;
-    const novoItem: ItemCarrinho = { servico: tempServico, horario };
-    if (pessoaGrupo) novoItem.pessoaGrupo = pessoaGrupo;
-    setCarrinho([...carrinho, novoItem]);
-    notify(`${tempServico.nome} adicionado!`, "success");
+  const adicionarAoCarrinho = (item: {
+    servico: any;
+    profissional: any;
+    horario: any;
+    pessoaGrupo?: { id: string; nome: string };
+  }) => {
+    if (!item.servico) {
+      console.error("Tentativa de adicionar item sem serviço", item);
+      return;
+    }
+    const novoItem: any = {
+      servico: item.servico,
+      horario: item.horario,
+      profissional: item.profissional,
+    };
+    if (item.pessoaGrupo) novoItem.pessoaGrupo = item.pessoaGrupo;
+    setCarrinho((prev) => [...prev, novoItem]);
+    notify(`${item.servico.nome} adicionado!`, "success");
     setShowHorariosModal(false);
     setTempServico(null);
   };
@@ -71,17 +82,19 @@ export function useAgendamentoFlow() {
     }
 
     for (const item of carrinho) {
+      const profissional = item.profissional || selectedProfissional;
+      const horario = item.horario;
       const payload: Agendamento = {
         nome: cliente.nome,
         telefone: cliente.telefone,
         email: cliente.email,
-        data: item.horario.data || "",
-        hora: item.horario.inicio,
-        inicio: item.horario.inicio,
-        fim: item.horario.fim,
+        data: horario.data || "",
+        hora: horario.inicio,
+        inicio: horario.inicio,
+        fim: horario.fim,
         servico: item.servico.nome,
-        barbeiro: selectedProfissional?.nome || item.pessoaGrupo?.profissional?.nome || "",
-        profissionalId: String(selectedProfissional?.id || item.pessoaGrupo?.profissional?.id),
+        barbeiro: profissional?.nome || item.pessoaGrupo?.profissional?.nome || "",
+        profissionalId: String(profissional?.id || item.pessoaGrupo?.profissional?.id),
         servicoId: String(item.servico.id),
         servicoNome: item.servico.nome,
         servicoPreco: item.servico.valor,
@@ -90,7 +103,6 @@ export function useAgendamentoFlow() {
     }
 
     notify("✅ Agendamento(s) realizado(s)!", "success");
-    // Reset completo
     setMainScreen("escolha");
     setStep("profissionais");
     setSelectedProfissional(null);
@@ -110,12 +122,11 @@ export function useAgendamentoFlow() {
 
   const horariosDisponiveis = selectedProfissional?.horarios?.filter((h: any) => h.disponivel !== false) || [];
   const servicosDoProfissional = selectedProfissional?.procedimentos || [];
-  const totalCarrinho = carrinho.reduce((acc, i) => acc + i.servico.valor, 0);
+  const totalCarrinho = carrinho.reduce((acc, i) => acc + (i.servico?.valor || 0), 0);
   const isServicoSelecionado = (servicoId: string | number) =>
-    carrinho.some(item => String(item.servico.id) === String(servicoId));
+    carrinho.some(item => String(item.servico?.id) === String(servicoId));
 
   return {
-    // estados
     mainScreen,
     step,
     cartSubStep,
@@ -132,7 +143,6 @@ export function useAgendamentoFlow() {
     horariosDisponiveis,
     servicosDoProfissional,
     totalCarrinho,
-    // setters
     setMainScreen,
     setStep,
     setCartSubStep,
@@ -143,7 +153,6 @@ export function useAgendamentoFlow() {
     setShowHorariosModal,
     setNotification,
     setConfirmDialog,
-    // actions
     notify,
     confirm,
     removerDoCarrinho,
