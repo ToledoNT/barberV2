@@ -6,26 +6,30 @@ datasource db {
   provider = "mongodb"
   url      = env("DATABASE_URL")
 }
+
 model Profissional {
-  id                  String              @id @default(auto()) @map("_id") @db.ObjectId
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
   nome                String
   email               String
   telefone            String
-  criadoEm            DateTime            @default(now())
-  atualizadoEm        DateTime            @updatedAt
+  criadoEm            DateTime @default(now())
+  atualizadoEm        DateTime @updatedAt
+
   procedimentos       Procedimento[]
   agendamentos        Agendamento[]
   horariosDisponiveis HorarioDisponivel[]
 }
 
 model Procedimento {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
   nome            String
   valor           Float
-  criadoEm        DateTime      @default(now())
-  atualizadoEm    DateTime      @updatedAt
-  profissionalId  String?       @db.ObjectId
+  criadoEm        DateTime @default(now())
+  atualizadoEm    DateTime @updatedAt
+
+  profissionalId  String?  @db.ObjectId
   profissional    Profissional? @relation(fields: [profissionalId], references: [id])
+
   agendamentos    Agendamento[]
 }
 
@@ -36,29 +40,34 @@ model HorarioDisponivel {
   data            DateTime
   inicio          String
   fim             String
-  disponivel      Boolean       @default(false)
-  criadoEm        DateTime      @default(now())
-  atualizadoEm    DateTime      @updatedAt
+  disponivel      Boolean       @default(true)
+  agendamentoId   String?       @db.ObjectId
+  agendamento     Agendamento?
+  criadoEm        DateTime @default(now())
+  atualizadoEm    DateTime @updatedAt
 }
 
 model Agendamento {
-  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  horarioId        String?  @db.ObjectId @unique
+  horario          HorarioDisponivel? @relation(fields: [horarioId], references: [id])
   nome             String
   telefone         String
-  email            String?       
+  email            String?
   data             DateTime
-  inicio           String?       
-  fim              String?      
-  servicoId        String        @db.ObjectId
-  servico          Procedimento  @relation(fields: [servicoId], references: [id])
-  profissionalId   String        @db.ObjectId
-  profissional     Profissional  @relation(fields: [profissionalId], references: [id])
-  status           String        @default("Agendado")
+  inicio           String?
+  fim              String?
+  servicoId        String   @db.ObjectId
+  servico          Procedimento @relation(fields: [servicoId], references: [id])
+  profissionalId   String   @db.ObjectId
+  profissional     Profissional @relation(fields: [profissionalId], references: [id])
+  status           String @default("Agendado")
   servicoNome      String?
   servicoPreco     Float?
   profissionalNome String?
-  criadoEm         DateTime      @default(now())
-  atualizadoEm     DateTime      @updatedAt
+  criadoEm         DateTime @default(now())
+  atualizadoEm     DateTime @updatedAt
 }
 
 model Financeiro {

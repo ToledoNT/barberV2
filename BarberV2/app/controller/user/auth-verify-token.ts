@@ -30,7 +30,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     console.error("Erro ao verificar token:", err);
-
     return NextResponse.json(
       {
         status: false,

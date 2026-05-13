@@ -56,15 +56,15 @@ const AgendamentoPrivadoForm: React.FC<AgendamentoPrivadoFormProps> = ({
         await fetchBarbeiroDados(agendamento.barbeiro);
       }
 
-      setLocalForm({
-        nome: agendamento.nome,
-        telefone: agendamento.telefone,
-        email: agendamento.email,
-        barbeiro: agendamento.barbeiro,
-        data: agendamento.data ? new Date(agendamento.data) : null,
-        hora: agendamento.hora,
-        servico: agendamento.servico,
-        status: agendamento.status ?? StatusAgendamento.PENDENTE,
+    setLocalForm({
+      nome: agendamento.nome ?? "",
+      telefone: agendamento.telefone ?? "",
+      email: agendamento.email ?? "",
+      barbeiro: agendamento.barbeiro ?? "",
+      data: agendamento.data ? new Date(agendamento.data) : null,
+      hora: agendamento.hora ?? "",
+      servico: agendamento.servico ?? "",
+      status: agendamento.status ?? StatusAgendamento.PENDENTE,
       });
     };
 
@@ -189,7 +189,6 @@ const AgendamentoPrivadoForm: React.FC<AgendamentoPrivadoFormProps> = ({
             />
           </div>
 
-          {/* SELECT HORÁRIOS ORDENADOS */}
           <Select
             name="hora"
             value={localForm.hora || ""}

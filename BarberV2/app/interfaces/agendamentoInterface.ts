@@ -1,6 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
 
-// -------------------- Profissionais e Procedimentos --------------------
 export interface Procedimento {
   id: string;
   nome: string;
@@ -50,8 +49,6 @@ export interface Barbeiro {
   diasDisponiveis?: string[]; 
 }
 
-// -------------------- Agendamentos --------------------
-
 export enum StatusAgendamento {
   PENDENTE = "Pendente",
   AGENDADO = "Agendado",
@@ -70,27 +67,26 @@ export interface AgendamentoFormData {
   servico: string;
   barbeiro: string;
 }
+
 export interface Agendamento {
   id?: string;
   nome: string;
   telefone: string;
   email: string;
   data: string;
-  hora: string;
   inicio: string;
   fim: string;
-  servico: string;
-  barbeiro: string;
+  hora?: string;
   status?: StatusAgendamento;
   criadoEm?: string;
   atualizadoEm?: string;
-
   servicoId?: string;
   servicoNome?: string;
   servicoPreco?: number;
-
+  servico?: string;
   profissionalId?: string;
-
+  profissionalNome?: string;
+  barbeiro?: string;
   procedimentoId?: string;
 }
 
@@ -105,7 +101,6 @@ export interface AgendamentoForm {
   status: StatusAgendamento;
 }
 
-// -------------------- Horários --------------------
 export interface HorarioDisponivel {
   id?: string;
   profissional: Barbeiro; 
@@ -130,7 +125,6 @@ export interface HorariosProps {
   removeHorario: (id: string) => void;
 }
 
-// -------------------- Formulários --------------------
 export interface AgendamentoPrivadoFormProps {
   agendamento?: Agendamento | null;
   onSave: (a: Agendamento) => Promise<void> | void;
@@ -201,7 +195,6 @@ export interface TableProps {
   data: Record<string, any>[];
 }
 
-// types/agendamento.types.ts
 export interface NotificationState {
   isOpen: boolean;
   message: string;

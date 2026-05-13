@@ -204,7 +204,7 @@ export default function Home() {
     notify,
   } = flow;
 
-  const [tipoAgendamento, setTipoAgendamento] = useState<"normal" | "grupo">("normal");
+  const [tipoAgendamento, setTipoAgendamento] = useState<"unico" | "grupo">("unico");
   const [pessoasGrupo, setPessoasGrupo] = useState<PessoaGrupo[]>([{ id: crypto.randomUUID(), nome: "" }]);
   const [pessoaSelecionada, setPessoaSelecionada] = useState<PessoaGrupo | null>(null);
   const [profissionalSelecionadoGrupo, setProfissionalSelecionadoGrupo] = useState<any>(null);
@@ -229,7 +229,7 @@ export default function Home() {
   const handleEnviarCodigo = async () => {
     let agendamentoPayload: any;
 
-    if (tipoAgendamento === "normal") {
+    if (tipoAgendamento === "unico") {
       if (carrinho.length === 0) {
         notify("Nenhum serviço selecionado.", "warning");
         return;
@@ -238,7 +238,7 @@ export default function Home() {
       const agendamento = carrinho[0];
 
       agendamentoPayload = {
-        tipo: "normal",
+        tipo: "unico",
         cliente: {
           nome: cliente.nome,
           email: cliente.email,
@@ -409,7 +409,7 @@ export default function Home() {
       {mainScreen === "escolha" && (
         <InitialScreen
           onAgendamentoClick={() => {
-            setTipoAgendamento("normal");
+            setTipoAgendamento("unico");
             iniciarAgendamento();
           }}
           onGrupoClick={() => {
@@ -516,7 +516,7 @@ export default function Home() {
 
           <div className="fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none">
             <div className="w-full max-w-sm pointer-events-auto px-4 pb-5">
-              {step === "servicos" && tipoAgendamento === "normal" && carrinho.length > 0 && (
+              {step === "servicos" && tipoAgendamento === "unico" && carrinho.length > 0 && (
                 <CartBottomBar
                   nomeServico={carrinho[0]?.servico?.nome || ""}
                   horarioStr={formatHorarioCompleto(carrinho[0]?.horario)}
@@ -552,7 +552,7 @@ export default function Home() {
         horarios={tipoAgendamento === "grupo" ? horariosFiltrados : horariosDisponiveis}
         onClose={() => setShowHorariosModal(false)}
         onSelectHorario={(horario) => {
-          if (tipoAgendamento === "normal") {
+          if (tipoAgendamento === "unico") {
             if (!tempServico || !selectedProfissional) {
               notify("Selecione um serviço e um profissional antes de escolher o horário.", "warning");
               return;

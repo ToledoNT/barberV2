@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 import { CreateAppointmentController } from "@/app/controller/appointments/create-agendamento-controller";
 import { GetAllAppointmentsController } from "@/app/controller/appointments/get-all-agendamentos-controler";
@@ -6,161 +6,111 @@ import { UpdateAppointmentController } from "@/app/controller/appointments/updat
 import { DeleteAppointmentController } from "@/app/controller/appointments/delete-agendamento-controller";
 import { GetHorariosByBarbeiroController } from "@/app/controller/horarios/get-by-barbeiros-controller";
 
-/**
- * GET - LISTAR AGENDAMENTOS
- */
-export async function GET(req: NextRequest): Promise<NextResponse> {
+import { AppointmentMiddleware } from "@/app/middleware/agendamento-middleware";
+import { UserMiddleware } from "@/app/middleware/user-middleware";
+
+
+import { UserRole } from "../../../../../KingsBarberShopBackend/src/interface/user/create-user-interface";
+import { RouteHelper } from "@/app/helpers/auth-helper";
+
+const appointmentMiddleware = new AppointmentMiddleware();
+const userMiddleware = new UserMiddleware();
+
+const allowedRoles: UserRole[] = ["ADMIN", "BARBEIRO"];
+
+export async function GET(req: NextRequest) {
   try {
+    const auth = await RouteHelper.authAndRole(
+      req,
+      userMiddleware,
+      allowedRoles
+    );
+
+    if (!auth.ok) return auth.response;
+
     const { searchParams } = new URL(req.url);
 
     const barbeiro = searchParams.get("barbeiro");
     const data = searchParams.get("data");
 
-    // ---------------- HORÁRIOS DISPONÍVEIS ----------------
     if (barbeiro && data) {
       const controller = new GetHorariosByBarbeiroController();
+      const response = await controller.handle(barbeiro, data);
 
-      const response = await controller.handle(barbeiro);
-
-      return NextResponse.json(response, {
-        status: response.code ?? 200,
-      });
+      return RouteHelper.success(response, response.code ?? 200);
     }
 
-    // ---------------- AGENDAMENTOS ----------------
     const controller = new GetAllAppointmentsController();
-
     const response = await controller.handle();
 
-    return NextResponse.json(response, {
-      status: response.code ?? 200,
-    });
-  } catch (error) {
-    console.error("Erro GET agendamento:", error);
-
-    return NextResponse.json(
-      {
-        status: false,
-        message: "Erro interno",
-        data: [],
-        code: 500,
-      },
-      { status: 500 }
-    );
+    return RouteHelper.success(response, response.code ?? 200);
+  } catch {
+    return RouteHelper.error("Erro interno", 500);
   }
 }
 
-/**
- * POST - CRIAR AGENDAMENTO
- */
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const auth = await RouteHelper.authAndRole(
+      req,
+      userMiddleware,
+      allowedRoles
+    );
+
+    if (!auth.ok) return auth.response;
+
+    const body = await RouteHelper.getBody(req);
+
+    if (!body) {
+      return RouteHelper.error("Body inválido", 400);
+    }
+
+    const validation =
+      appointmentMiddleware.handleCreateAppointment(body);
+
+    if (!validation.status) {
+      return RouteHelper.error(
+        validation.message,
+        validation.code
+      );
+    }
 
     const controller = new CreateAppointmentController();
-
     const response = await controller.handle(body);
 
-    return NextResponse.json(response, {
-      status: response.code ?? 201,
-    });
-  } catch (error) {
-    console.error("Erro POST agendamento:", error);
-
-    return NextResponse.json(
-      {
-        status: false,
-        message: "Erro interno",
-        data: [],
-        code: 500,
-      },
-      { status: 500 }
-    );
+    return RouteHelper.success(response, response.code ?? 201);
+  } catch {
+    return RouteHelper.error("Erro interno", 500);
   }
 }
 
-/**
- * PUT - ATUALIZAR AGENDAMENTO
- */
-export async function PUT(req: NextRequest): Promise<NextResponse> {
+export async function PUT(req: NextRequest) {
   try {
-    const body = await req.json();
+    const auth = await RouteHelper.authAndRole(
+      req,
+      userMiddleware,
+      allowedRoles
+    );
+
+    if (!auth.ok) return auth.response;
+
+    const body = await RouteHelper.getBody(req);
+
+    if (!body) {
+      return RouteHelper.error("Body inválido", 400);
+    }
 
     const { id, ...data } = body;
 
     if (!id) {
-      return NextResponse.json(
-        {
-          status: false,
-          message: "ID é obrigatório",
-          data: [],
-          code: 400,
-        },
-        { status: 400 }
-      );
+      return RouteHelper.error("ID obrigatório", 400);
     }
 
     const controller = new UpdateAppointmentController();
-
     const response = await controller.handle({ id, ...data });
 
-    return NextResponse.json(response, {
-      status: response.code ?? 200,
-    });
-  } catch (error) {
-    console.error("Erro PUT agendamento:", error);
-
-    return NextResponse.json(
-      {
-        status: false,
-        message: "Erro interno",
-        data: [],
-        code: 500,
-      },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * DELETE - REMOVER AGENDAMENTO
- */
-export async function DELETE(req: NextRequest): Promise<NextResponse> {
-  try {
-    const { searchParams } = new URL(req.url);
-
-    const id = searchParams.get("id");
-
-    if (!id) {
-      return NextResponse.json(
-        {
-          status: false,
-          message: "ID é obrigatório",
-          data: [],
-          code: 400,
-        },
-        { status: 400 }
-      );
-    }
-
-    const controller = new DeleteAppointmentController();
-
-    const response = await controller.handle(id);
-
-    return NextResponse.json(response, {
-      status: response.code ?? 200,
-    });
-  } catch (error) {
-    console.error("Erro DELETE agendamento:", error);
-
-    return NextResponse.json(
-      {
-        status: false,
-        message: "Erro interno",
-        data: [],
-        code: 500,
-      },
-      { status: 500 }
-    );
+    return RouteHelper.success(response, response.code ?? 200);
+  } catch {
+    return RouteHelper.error("Erro interno", 500);
   }
 }

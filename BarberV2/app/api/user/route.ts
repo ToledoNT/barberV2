@@ -1,97 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
+import { LoginController } from "@/app/controller/user/login-controller";
 import jwt from "jsonwebtoken";
-import { GetUserByEmailUseCase } from "@/app/use-case/user/get-user-by-email-use-case";
 
-
-/**
- * =========================
- * POST - LOGIN
- * =========================
- */
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
 
-    if (!email || !password) {
-      return NextResponse.json(
-        {
-          status: false,
-          code: 400,
-          message: "email e password são obrigatórios",
-          data: null,
-        },
-        { status: 400 }
-      );
+    const controller = new LoginController();
+    const result = await controller.handle(email, password);
+
+    if (!result.status) {
+      return NextResponse.json(result, {
+        status: result.code ?? 400,
+      });
     }
 
-    const userResult = await new GetUserByEmailUseCase().execute(email);
+    const { user, token } = result.data!;
 
-    if (!userResult.status || !userResult.data) {
-      return NextResponse.json(
-        {
-          status: false,
-          code: 401,
-          message: "Usuário ou senha inválidos",
-          data: null,
-        },
-        { status: 401 }
-      );
-    }
-
-    const user = userResult.data;
-
-    const passwordMatch = await bcrypt.compare(password, user.password);
-
-    if (!passwordMatch) {
-      return NextResponse.json(
-        {
-          status: false,
-          code: 401,
-          message: "Usuário ou senha inválidos",
-          data: null,
-        },
-        { status: 401 }
-      );
-    }
-
-    const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: "10h" }
-    );
-
-    const response = NextResponse.json({
-      status: true,
-      code: 200,
-      message: "Login realizado com sucesso",
-      data: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
+    const response = NextResponse.json(
+      {
+        status: true,
+        code: 200,
+        message: result.message,
+        data: result.data, 
       },
-    });
+      { status: 200 }
+    );
 
     response.cookies.set({
       name: "token",
       value: token,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 10,
+      sameSite: "lax",
       path: "/",
+      maxAge: 60 * 60 * 10,
     });
 
     return response;
   } catch (err) {
-    console.error(err);
-
     return NextResponse.json(
       {
         status: false,
         code: 500,
-        message: "Erro interno ao fazer login",
+        message: "Erro interno",
         data: null,
       },
       { status: 500 }
@@ -99,11 +51,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/**
- * =========================
- * GET - VERIFY TOKEN
- * =========================
- */
 export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value;
@@ -113,14 +60,17 @@ export async function GET(req: NextRequest) {
         {
           status: false,
           code: 401,
-          message: "Token inválido ou expirado",
+          message: "Token não encontrado",
           data: null,
         },
         { status: 401 }
       );
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET!
+    );
 
     return NextResponse.json({
       status: true,
@@ -133,7 +83,7 @@ export async function GET(req: NextRequest) {
       {
         status: false,
         code: 401,
-        message: "Token inválido ou expirado",
+        message: "Token inválido",
         data: null,
       },
       { status: 401 }
@@ -141,11 +91,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-/**
- * =========================
- * DELETE - LOGOUT
- * =========================
- */
 export async function DELETE() {
   const response = NextResponse.json({
     status: true,
@@ -157,9 +102,7 @@ export async function DELETE() {
   response.cookies.set({
     name: "token",
     value: "",
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    expires: new Date(0),
+    maxAge: 0,
     path: "/",
   });
 

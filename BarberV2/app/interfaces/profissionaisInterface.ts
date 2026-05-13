@@ -19,6 +19,7 @@ export interface Profissional {
     profissional?: any;
   }[];
 }
+
 export interface ProfissionaisProps {
   profissionais: Profissional[];
   novoProfissional: Omit<Profissional, "id" | "procedimentos">;
@@ -87,4 +88,13 @@ export interface BarbeiroDadosResponse {
   barbeiroId: string;
   horarios: HorarioDisponivel[];
   procedimentos: Procedimento[];
+}
+
+export enum StatusAgendamento {
+  PENDENTE = "PENDENTE",
+  AGENDADO = "AGENDADO",
+  EM_ANDAMENTO = "EM_ANDAMENTO",
+  CONCLUIDO = "CONCLUIDO",
+  CANCELADO = "CANCELADO",
+  NAO_COMPARECEU = "NAO_COMPARECEU",
 }

@@ -8,6 +8,7 @@ import {
   Procedimento,
   StatusAgendamento,
 } from "../interfaces/agendamentoInterface";
+
 import { ProfissionalService } from "../api/profissionaisAdmin";
 import { AppointmentService } from "../api/agendamentoAdmin";
 import { HorarioService } from "../api/horarioAdmin";
@@ -16,6 +17,37 @@ import { Profissional } from "../../app/interfaces/profissionaisInterface";
 const appointmentService = new AppointmentService();
 const profissionalService = new ProfissionalService();
 const horarioService = new HorarioService();
+
+/**
+ * 🔥 NORMALIZADOR DE STATUS (ANTI-BUG)
+ */
+const normalizeStatus = (status?: string): StatusAgendamento => {
+  const s = String(status || "").trim().toUpperCase();
+
+  switch (s) {
+    case "PENDENTE":
+      return StatusAgendamento.PENDENTE;
+
+    case "AGENDADO":
+      return StatusAgendamento.AGENDADO;
+
+    case "EM_ANDAMENTO":
+      return StatusAgendamento.EM_ANDAMENTO;
+
+    case "CONCLUIDO":
+    case "CONCLUÍDO":
+      return StatusAgendamento.CONCLUIDO;
+
+    case "CANCELADO":
+      return StatusAgendamento.CANCELADO;
+
+    case "NAO_COMPARECEU":
+      return StatusAgendamento.NAO_COMPARECEU;
+
+    default:
+      return StatusAgendamento.PENDENTE;
+  }
+};
 
 type FormState = {
   barbeiro: string;
@@ -35,35 +67,37 @@ export function useAgendamentosAdmin() {
     fetchTodosHorarios();
   }, []);
 
-const fetchBarbeiros = async () => {
-  const response = await profissionalService.fetchProfissionais();
-  if (Array.isArray(response)) {
-    setBarbeiros(
-      response.map((b: Profissional) => ({
-        id: b.id,
-        nome: b.nome,
-        horarios: Array.isArray(b.horarios)
-          ? b.horarios.map((h: any) => (typeof h === "string" ? h : h.id || ""))
-          : [],
-      }))
-    );
-  }
-};
+ 
+  const fetchBarbeiros = async () => {
+    const response = await profissionalService.fetchProfissionais();
+
+    if (Array.isArray(response)) {
+      setBarbeiros(
+        response.map((b: Profissional) => ({
+          id: b.id,
+          nome: b.nome,
+          horarios: Array.isArray(b.horarios)
+            ? b.horarios.map((h: any) => (typeof h === "string" ? h : h.id || ""))
+            : [],
+        }))
+      );
+    }
+  };
 
   const fetchAgendamentos = async () => {
     const data = await appointmentService.fetchAppointments();
-    setAgendamentos(data || []);
+
+    setAgendamentos(
+      (data || []).map((a: any) => ({
+        ...a,
+        status: normalizeStatus(a.status),
+      }))
+    );
   };
 
   const fetchTodosHorarios = async () => {
     const data = await horarioService.fetchAllHorarios();
     setHorarios(data || []);
-  };
-
-  type BarbeiroDadosResponse = {
-    barbeiroId: string;
-    horarios: HorarioDisponivel[];
-    procedimentos: Procedimento[];
   };
 
   const fetchBarbeiroDados = async (barbeiroId: string) => {
@@ -73,19 +107,19 @@ const fetchBarbeiros = async () => {
       return;
     }
 
-    const res: BarbeiroDadosResponse = await profissionalService.fetchHorariosByProfissional(barbeiroId);
+    const res = await profissionalService.fetchHorariosByProfissional(barbeiroId);
 
     const horariosConvertidos = res.horarios
-      .filter((h): h is HorarioDisponivel & { id: string } => !!h.id)
-      .map((h) => ({
+      .filter((h: any) => !!h.id)
+      .map((h: any) => ({
         ...h,
         label: h.label ?? `${h.inicio} - ${h.fim}`,
         disponivel: h.disponivel ?? true,
       }));
 
     const procedimentosConvertidos = res.procedimentos
-      .filter((p): p is Procedimento & { id: string } => !!p.id)
-      .map((p) => ({
+      .filter((p: any) => !!p.id)
+      .map((p: any) => ({
         ...p,
         label: p.label ?? `${p.nome} - R$${p.valor.toFixed(2)}`,
       }));
@@ -96,23 +130,25 @@ const fetchBarbeiros = async () => {
   };
 
   const addAgendamento = async (a: Agendamento) => {
-    try {
-      const newA = await appointmentService.createAppointment(a);
+    const newA = await appointmentService.createAppointment(a);
 
-      if (newA && newA.id) {
-        setAgendamentos((prev) => [...prev, newA]);
-      } else {
-        console.error("Erro: Agendamento retornado incompleto ou inválido");
-      }
-    } catch (error) {
-      console.error("Erro ao criar agendamento:", error);
+    if (newA?.id) {
+      setAgendamentos((prev) => [
+        ...prev,
+        { ...newA, status: normalizeStatus(newA.status) },
+      ]);
     }
   };
 
   const updateAgendamento = async (id: string, a: Partial<Agendamento>) => {
     await appointmentService.updateAppointment(id, a);
+
     setAgendamentos((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, ...a } : item))
+      prev.map((item) =>
+        item.id === id
+          ? { ...item, ...a, status: normalizeStatus(a.status || item.status) }
+          : item
+      )
     );
   };
 
@@ -141,23 +177,17 @@ const fetchBarbeiros = async () => {
       setHorarios((prev) => [...prev, normalizeHorario(response)]);
     }
 
-    setTimeout(() => {
-      fetchTodosHorarios();
-    }, 500);
+    setTimeout(fetchTodosHorarios, 500);
 
     return response;
   };
 
   const createHorarioIndividual = async (h: Partial<HorarioDisponivel>) => {
-    try {
-      const response = await horarioService.createHorarioIndividual(h);
-      const horarioCriado = Array.isArray(response) ? response[0] : response;
-      setHorarios((prev) => [...prev, horarioCriado]);
-      return horarioCriado;
-    } catch (error: any) {
-      console.error("❌ Erro ao criar horário individual:", error);
-      throw new Error(error.message || "Erro ao criar horário individual");
-    }
+    const response = await horarioService.createHorarioIndividual(h);
+    const horarioCriado = Array.isArray(response) ? response[0] : response;
+
+    setHorarios((prev) => [...prev, horarioCriado]);
+    return horarioCriado;
   };
 
   const removeHorario = async (id: string) => {
@@ -167,9 +197,11 @@ const fetchBarbeiros = async () => {
 
   const toggleHorarioDisponivel = async (h: HorarioDisponivel) => {
     if (!h.id) return;
+
     const updated = await horarioService.updateHorario(h.id, {
       disponivel: !h.disponivel,
     });
+
     setHorarios((prev) =>
       prev.map((item) =>
         item.id === h.id ? { ...item, disponivel: updated.disponivel } : item
@@ -178,15 +210,13 @@ const fetchBarbeiros = async () => {
   };
 
   const handleUpdateStatusAgendamento = async (id: string, status: StatusAgendamento) => {
-    try {
-      const payload = { id, status };
-      await appointmentService.updateAppointment(id, payload);
-      setAgendamentos((prev) =>
-        prev.map((a) => (a.id === id ? { ...a, status } : a))
-      );
-    } catch (err) {
-      console.error("Erro ao atualizar status:", err);
-    }
+    await appointmentService.updateAppointment(id, { id, status });
+
+    setAgendamentos((prev) =>
+      prev.map((a) =>
+        a.id === id ? { ...a, status: normalizeStatus(status) } : a
+      )
+    );
   };
 
   return {

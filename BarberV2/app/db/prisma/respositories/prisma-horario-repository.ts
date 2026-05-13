@@ -18,7 +18,7 @@ export class PrismaHorarioRepository {
           data: horario.data,
           inicio: horario.inicio,
           fim: horario.fim,
-          disponivel: horario.disponivel ?? false,
+          disponivel: true,
           profissional: { connect: { id: horario.profissionalId } },
         },
         include: { profissional: true },

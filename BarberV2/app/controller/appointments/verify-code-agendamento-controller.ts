@@ -2,20 +2,17 @@ import { CreateAppointmentUseCase } from "@/app/use-case/agendamento/create-agen
 import { VerificarCodigoUseCase } from "@/app/use-case/agendamento/email-verify-code-agendamento";
 import { GetHorarioByIdUseCase } from "@/app/use-case/horario/get-horario-by-id-use-case";
 import { DeleteHorarioUseCase } from "@/app/use-case/horario/delete-horario-use-case";
+import { UpdateRelatorioUseCase } from "@/app/use-case/relatorio/update-relatorio-use-case";
 
 export class VerificarCodigoController {
   async handle(email: string, codigo: string) {
     try {
-      const useCaseCode = new VerificarCodigoUseCase();
-
-      const result = await useCaseCode.execute({
+      const result = await new VerificarCodigoUseCase().execute({
         email,
         codigo,
       });
 
-      if (!result?.status) {
-        return result;
-      }
+      if (!result?.status) return result;
 
       const payload: any = result.data?.payload;
 
@@ -28,104 +25,23 @@ export class VerificarCodigoController {
         };
       }
 
-      const profissionalId =
-        typeof payload.profissional === "string"
-          ? payload.profissional
-          : payload.profissional?.id;
+      const tipo = String(payload.tipo || "").trim().toLowerCase();
 
-      const servicoId =
-        typeof payload.servico === "string"
-          ? payload.servico
-          : payload.servico?.id;
+      switch (tipo) {
+        case "unico":
+          return await this.processarUnico(payload);
 
-      const horarioId =
-        payload.horario?.id || payload.horario;
+        case "grupo":
+          return await this.processarGrupo(payload);
 
-      const horario = payload.horario || {};
-
-      if (!profissionalId) {
-        return {
-          status: false,
-          code: 400,
-          message: "Profissional não informado no payload",
-          data: [],
-        };
+        default:
+          return {
+            status: false,
+            code: 400,
+            message: "Tipo de agendamento inválido",
+            data: [],
+          };
       }
-
-      if (!servicoId) {
-        return {
-          status: false,
-          code: 400,
-          message: "Serviço não informado no payload",
-          data: [],
-        };
-      }
-
-      if (!horario?.data || !horario?.inicio) {
-        return {
-          status: false,
-          code: 400,
-          message: "Horário inválido no payload",
-          data: [],
-        };
-      }
-
-      const horarioResponse = await new GetHorarioByIdUseCase().execute(horarioId);
-
-      if (!horarioResponse?.status || !horarioResponse.data) {
-        return {
-          status: false,
-          code: 404,
-          message: "Horário não encontrado.",
-          data: [],
-        };
-      }
-
-      const horarioData = horarioResponse.data.data;
-
-      const agendamentoFinal = {
-        nome: payload.cliente?.nome,
-        telefone: payload.cliente?.telefone ?? "",
-        email: payload.cliente?.email,
-
-        data: horarioData.data,
-        inicio: horarioData.inicio,
-        fim: horarioData.fim,
-
-        servico: servicoId,
-        profissional: profissionalId,
-        status: "AGENDADO",
-      };
-
-      const criarAgendamento = new CreateAppointmentUseCase();
-      const agendamentoCreated =
-        await criarAgendamento.execute(agendamentoFinal as any);
-
-      if (!agendamentoCreated?.status) {
-        return {
-          status: false,
-          code: 500,
-          message: "Erro ao criar agendamento.",
-          data: [],
-        };
-      }
-
-      const deleteHorario = new DeleteHorarioUseCase();
-      const deleteResult = await deleteHorario.execute(horarioId);
-
-      if (!deleteResult?.status) {
-        console.warn(
-          "Falha ao remover horário utilizado:",
-          deleteResult.message
-        );
-      }
-
-      return {
-        status: true,
-        code: 200,
-        message: "Código validado e agendamento criado com sucesso",
-        data: agendamentoCreated,
-      };
     } catch (error) {
       console.error("Erro no VerificarCodigoController:", error);
 
@@ -136,6 +52,214 @@ export class VerificarCodigoController {
         error: error instanceof Error ? error.message : "Erro desconhecido",
         data: [],
       };
+    }
+  }
+
+  private async processarUnico(payload: any) {
+    const profissionalId =
+      typeof payload.profissional === "string"
+        ? payload.profissional
+        : payload.profissional?.id;
+
+    const servicoId =
+      typeof payload.servico === "string"
+        ? payload.servico
+        : payload.servico?.id;
+
+    const horarioId =
+      typeof payload.horario === "string"
+        ? payload.horario
+        : payload.horario?.id;
+
+    if (!payload.cliente?.nome || !payload.cliente?.email) {
+      return {
+        status: false,
+        code: 400,
+        message: "Cliente inválido no payload",
+        data: [],
+      };
+    }
+
+    const horarioResponse =
+      await new GetHorarioByIdUseCase().execute(horarioId);
+
+    if (!horarioResponse?.status || !horarioResponse.data) {
+      return {
+        status: false,
+        code: 404,
+        message: "Horário não encontrado.",
+        data: [],
+      };
+    }
+
+    const horario = horarioResponse.data.data;
+
+    const created =
+      await new CreateAppointmentUseCase().execute({
+        nome: payload.cliente.nome,
+        telefone: payload.cliente.telefone ?? "",
+        email: payload.cliente.email,
+
+        data: horario.data,
+        inicio: horario.inicio,
+        fim: horario.fim,
+
+        servico: servicoId,
+        profissional: profissionalId,
+        status: "AGENDADO",
+      } as any);
+
+    if (!created?.status) {
+      return {
+        status: false,
+        code: 500,
+        message: "Erro ao criar agendamento.",
+        data: [],
+      };
+    }
+
+    await new DeleteHorarioUseCase().execute(horarioId);
+
+    await this.atualizarRelatorio(horario.data);
+
+    return {
+      status: true,
+      code: 200,
+      message: "Agendamento criado com sucesso",
+      data: created,
+    };
+  }
+
+  private async processarGrupo(payload: any) {
+    const participantes = payload.participantes || [];
+
+    if (!payload.cliente?.nome || !payload.cliente?.email) {
+      return {
+        status: false,
+        code: 400,
+        message: "Cliente inválido no payload",
+        data: [],
+      };
+    }
+
+    if (!participantes.length) {
+      return {
+        status: false,
+        code: 400,
+        message: "Nenhum participante encontrado",
+        data: [],
+      };
+    }
+
+    const criarAgendamento = new CreateAppointmentUseCase();
+    const resultados: any[] = [];
+
+    let contadorAgendamentos = 0;
+
+    for (const p of participantes) {
+      const profissionalId =
+        typeof p.profissional === "string"
+          ? p.profissional
+          : p.profissional?.id;
+
+      const servicoId =
+        typeof p.servico === "string"
+          ? p.servico
+          : p.servico?.id;
+
+      const horario = p.horario;
+
+      if (!profissionalId || !servicoId || !horario?.id) {
+        return {
+          status: false,
+          code: 400,
+          message: "Dados inválidos no participante",
+          data: [],
+        };
+      }
+
+      const created = await criarAgendamento.execute({
+        nome: payload.cliente.nome,
+        telefone: payload.cliente.telefone ?? "",
+        email: payload.cliente.email,
+
+        data: horario.data,
+        inicio: horario.inicio,
+        fim: horario.fim,
+
+        servico: servicoId,
+        profissional: profissionalId,
+        status: "AGENDADO",
+      } as any);
+
+      if (!created?.status) {
+        return {
+          status: false,
+          code: 500,
+          message: "Erro ao criar agendamento no grupo",
+          data: [],
+        };
+      }
+
+      await new DeleteHorarioUseCase().execute(horario.id);
+
+      resultados.push(created);
+
+      contadorAgendamentos++;
+    }
+
+    const primeiraData = participantes[0]?.horario?.data;
+
+    if (primeiraData) {
+      await this.atualizarRelatorioGrupo(primeiraData, contadorAgendamentos);
+    }
+
+    return {
+      status: true,
+      code: 200,
+      message: "Agendamentos em grupo criados com sucesso",
+      data: resultados,
+    };
+  }
+
+  private async atualizarRelatorio(dataAgendamento: Date | string) {
+    try {
+      const date = new Date(dataAgendamento);
+
+      const mesAno = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        1
+      );
+
+      await new UpdateRelatorioUseCase().execute({
+        mesAno,
+        agendamentos: 1,
+      });
+    } catch (err) {
+      console.warn("Erro ao atualizar relatório:", err);
+    }
+  }
+
+  private async atualizarRelatorioGrupo(
+    dataAgendamento: Date | string,
+    quantidade: number
+  ) {
+    try {
+      const date = new Date(dataAgendamento);
+
+      const mesAno = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        1
+      );
+
+      await new UpdateRelatorioUseCase().execute({
+        mesAno,
+        agendamentos: quantidade,
+      });
+    } catch (err) {
+      console.warn("Erro ao atualizar relatório do grupo:", err);
     }
   }
 }

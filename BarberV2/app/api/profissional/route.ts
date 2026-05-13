@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 import { GetAllProfessionalsController } from "@/app/controller/profissional/get-all-profissional-controler";
 import { CreateProfessionalController } from "@/app/controller/profissional/create-profissional-controller";
@@ -6,169 +6,148 @@ import { UpdateProfessionalController } from "@/app/controller/profissional/upda
 import { DeleteProfessionalController } from "@/app/controller/profissional/delete-profissional-controller";
 import { GetHorariosByBarbeiroController } from "@/app/controller/horarios/get-by-barbeiros-controller";
 
-/**
- * GET - LISTAR PROFISSIONAIS
- * GET - HORÁRIOS (?barbeiroId=123)
- */
+import { UserMiddleware } from "@/app/middleware/user-middleware";
+import { ProfessionalMiddleware } from "@/app/middleware/profissional-middleware";
 
-export async function GET(req: NextRequest): Promise<NextResponse> {
+
+import { UserRole } from "../../../../../KingsBarberShopBackend/src/interface/user/create-user-interface";
+import { RouteHelper } from "@/app/helpers/auth-helper";
+
+const userMiddleware = new UserMiddleware();
+const professionalMiddleware = new ProfessionalMiddleware();
+
+const allowedRoles: UserRole[] = ["ADMIN", "BARBEIRO"];
+
+export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
     const barbeiroId = searchParams.get("barbeiroId");
 
-    /**
-     * HORÁRIOS DO BARBEIRO
-     */
     if (barbeiroId) {
       const controller = new GetHorariosByBarbeiroController();
-
       const response = await controller.handle(barbeiroId);
 
-      return NextResponse.json(response, {
-        status: response.code ?? 200,
-      });
+      return RouteHelper.success(response, response.code ?? 200);
     }
 
-    /**
-     * LISTAR PROFISSIONAIS
-     */
     const controller = new GetAllProfessionalsController();
-
     const response = await controller.handle();
 
-    return NextResponse.json(response, {
-      status: response.code ?? 200,
-    });
-  } catch (error) {
-    console.error("Erro na rota GET:", error);
-
-    return NextResponse.json(
-      {
-        status: false,
-        message: "Erro interno",
-        data: [],
-        code: 500,
-      },
-      { status: 500 }
-    );
+    return RouteHelper.success(response, response.code ?? 200);
+  } catch {
+    return RouteHelper.error("Erro interno", 500);
   }
 }
 
-/**
- * POST - CRIAR PROFISSIONAL
- */
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const auth = await RouteHelper.authAndRole(
+      req,
+      userMiddleware,
+      allowedRoles
+    );
+
+    if (!auth.ok) return auth.response;
+
+    const body = await RouteHelper.getBody(req);
+
+    if (!body) {
+      return RouteHelper.error("Body inválido", 400);
+    }
+
+    const validation =
+      await professionalMiddleware.handleCreateProfessional(req);
+
+    if (!validation.status) {
+      return RouteHelper.error(
+        validation.message,
+        validation.code
+      );
+    }
 
     const controller = new CreateProfessionalController();
-
     const response = await controller.handle(body);
 
-    return NextResponse.json(response, {
-      status: response.code ?? 201,
-    });
-  } catch (error) {
-    console.error("Erro na rota POST:", error);
-
-    return NextResponse.json(
-      {
-        status: false,
-        message: "Erro interno",
-        data: [],
-        code: 500,
-      },
-      { status: 500 }
-    );
+    return RouteHelper.success(response, response.code ?? 201);
+  } catch {
+    return RouteHelper.error("Erro interno", 500);
   }
 }
 
-/**
- * PUT - ATUALIZAR PROFISSIONAL
- */
-export async function PUT(req: NextRequest): Promise<NextResponse> {
+export async function PUT(req: NextRequest) {
   try {
-    const body = await req.json();
+    const auth = await RouteHelper.authAndRole(
+      req,
+      userMiddleware,
+      allowedRoles
+    );
+
+    if (!auth.ok) return auth.response;
+
+    const body = await RouteHelper.getBody(req);
+
+    if (!body) {
+      return RouteHelper.error("Body inválido", 400);
+    }
 
     const { id, ...data } = body;
 
     if (!id) {
-      return NextResponse.json(
-        {
-          status: false,
-          message: "ID é obrigatório",
-          data: [],
-          code: 400,
-        },
-        { status: 400 }
+      return RouteHelper.error("ID é obrigatório", 400);
+    }
+
+    const validation =
+      await professionalMiddleware.handleUpdateProfessional(req);
+
+    if (!validation.status) {
+      return RouteHelper.error(
+        validation.message,
+        validation.code
       );
     }
 
     const controller = new UpdateProfessionalController();
+    const response = await controller.handle({ id, ...data });
 
-    const response = await controller.handle({
-      id,
-      ...data,
-    });
-
-    return NextResponse.json(response, {
-      status: response.code ?? 200,
-    });
-  } catch (error) {
-    console.error("Erro na rota PUT:", error);
-
-    return NextResponse.json(
-      {
-        status: false,
-        message: "Erro interno",
-        data: [],
-        code: 500,
-      },
-      { status: 500 }
-    );
+    return RouteHelper.success(response, response.code ?? 200);
+  } catch {
+    return RouteHelper.error("Erro interno", 500);
   }
 }
 
-/**
- * DELETE - REMOVER PROFISSIONAL
- */
-export async function DELETE(req: NextRequest): Promise<NextResponse> {
+export async function DELETE(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const auth = await RouteHelper.authAndRole(
+      req,
+      userMiddleware,
+      allowedRoles
+    );
 
+    if (!auth.ok) return auth.response;
+
+    const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json(
-        {
-          status: false,
-          message: "ID é obrigatório",
-          data: [],
-          code: 400,
-        },
-        { status: 400 }
+      return RouteHelper.error("ID é obrigatório", 400);
+    }
+
+    const validation =
+      await professionalMiddleware.handleDeleteProfessional(req);
+
+    if (!validation.status) {
+      return RouteHelper.error(
+        validation.message,
+        validation.code
       );
     }
 
     const controller = new DeleteProfessionalController();
-
     const response = await controller.handle(id);
 
-    return NextResponse.json(response, {
-      status: response.code ?? 200,
-    });
-  } catch (error) {
-    console.error("Erro na rota DELETE:", error);
-
-    return NextResponse.json(
-      {
-        status: false,
-        message: "Erro interno",
-        data: [],
-        code: 500,
-      },
-      { status: 500 }
-    );
+    return RouteHelper.success(response, response.code ?? 200);
+  } catch {
+    return RouteHelper.error("Erro interno", 500);
   }
 }

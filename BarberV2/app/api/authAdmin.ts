@@ -1,9 +1,5 @@
-import {
-  LoginData,
-  LoginResult,
-  VerifyTokenResponse,
-} from "@/app/interfaces/loginInterface";
 import axios from "axios";
+import { LoginData, LoginResult } from "../interfaces/loginInterface";
 
 const api = axios.create({
   baseURL: "/api",
@@ -12,62 +8,52 @@ const api = axios.create({
 });
 
 export class AuthService {
-  // ---------------- LOGIN ----------------
   async login(data: LoginData): Promise<LoginResult> {
     try {
-      // FIX: rota correta /api/user (login)
       const response = await api.post<{
         status: boolean;
-        data?: LoginResult;
+        code?: number;
         message?: string;
+        data: {
+          user: LoginResult;
+          token: string;
+        };
       }>("/user", data);
 
       if (!response.data.status || !response.data.data) {
-        throw new Error(
-          response.data.message || "Erro ao realizar login"
-        );
+        throw new Error(response.data.message || "Erro ao realizar login");
       }
 
-      const role = response.data.data.role;
+      const { user } = response.data.data;
 
-      localStorage.setItem("role", role);
+      localStorage.setItem("role", user.role);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(response.data.data)
-      );
-
-      return response.data.data;
+      return user;
     } catch (err) {
       console.error("Erro durante o login:", err);
       throw err;
     }
   }
 
-  // ---------------- VERIFY TOKEN ----------------
   async verifyToken(): Promise<boolean> {
     try {
-      // FIX: GET /api/user
-      const response =
-        await api.get<VerifyTokenResponse>("/user");
+      const response = await api.get("/user");
 
       return response.data.status === true;
     } catch (err) {
-      console.error("Erro ao verificar o token:", err);
       return false;
     }
   }
 
-  // ---------------- LOGOUT ----------------
   async logout(): Promise<void> {
     try {
-      // FIX: DELETE /api/user
       await api.delete("/user");
 
       localStorage.removeItem("role");
       localStorage.removeItem("user");
-    } catch (err: any) {
-      console.error("Erro durante o logout:", err);
+    } catch (err) {
+      console.error("Erro logout:", err);
       throw err;
     }
   }

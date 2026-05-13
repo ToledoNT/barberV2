@@ -373,33 +373,38 @@ export default function CriarAgendamentoPage() {
     }
   };
 
-  // ------------------- AGENDAMENTOS -------------------
   const handleSaveAgendamento = async (a: Agendamento) => {
-    const payload: Agendamento = { ...a, inicio: a.inicio || a.hora, fim: a.fim || a.hora };
-    try {
-      if (payload.id) {
-        await updateAgendamento(payload.id, payload);
-        notify("Agendamento atualizado com sucesso!", "success");
-      } else {
-        await addAgendamento(payload);
-        notify("Agendamento criado com sucesso!", "success");
-      }
-      setSelectedAgendamento(null);
-      setTabs({ ...tabs, agendamento: "gerenciar" });
-    } catch (err) {
-      console.error("Erro ao salvar agendamento:", err);
-      notify("Erro ao salvar agendamento.", "error");
-    }
+  const payload: Agendamento = {
+    ...a,
+    inicio: a.inicio ?? a.hora ?? "",
+    fim: a.fim ?? a.hora ?? "",
+    hora: a.hora ?? "",
+    servico: a.servico ?? "",
+    barbeiro: a.barbeiro ?? "",
+    email: a.email ?? "",
+    telefone: a.telefone ?? "",
+    nome: a.nome ?? "",
   };
 
-  const handleDeleteAgendamento = async (id: string) => {
-    confirm(
-      "Excluir Agendamento",
-      "Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.",
-      () => removeAgendamento(id),
-      "error"
-    );
-  };
+  try {
+    if (payload.id) {
+      await updateAgendamento(payload.id, payload);
+      notify("Agendamento atualizado com sucesso!", "success");
+    } else {
+      await addAgendamento(payload);
+      notify("Agendamento criado com sucesso!", "success");
+    }
+
+    setSelectedAgendamento(null);
+    setTabs((prev) => ({
+      ...prev,
+      agendamento: "gerenciar",
+    }));
+  } catch (err) {
+    console.error("Erro ao salvar agendamento:", err);
+    notify("Erro ao salvar agendamento.", "error");
+  }
+};
 
   const statusColors: Record<StatusAgendamento, { bg: string; text: string }> = {
     [StatusAgendamento.PENDENTE]: { bg: "bg-gray-500", text: "text-white" },
@@ -906,7 +911,6 @@ export default function CriarAgendamentoPage() {
   );
 }
 
-// Função auxiliar para calcular duração
 function calculateDuration(start: string, end: string): string {
   const startTime = new Date(`2000-01-01T${start}`);
   const endTime = new Date(`2000-01-01T${end}`);
@@ -923,7 +927,6 @@ function calculateDuration(start: string, end: string): string {
   }
 }
 
-// Função para formatar hora para display
 function formatTimeForDisplay(time: string): string {
   const [hours, minutes] = time.split(':');
   return `${hours}:${minutes}`;
