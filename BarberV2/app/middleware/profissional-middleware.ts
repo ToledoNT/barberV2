@@ -1,9 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-
 export class ProfessionalMiddleware {
-  async handleCreateProfessional(req: NextRequest) {
-    const body = await req.json().catch(() => null);
-
+  handleCreateProfessional(body: any) {
     if (!body) {
       return {
         status: false,
@@ -19,7 +15,8 @@ export class ProfessionalMiddleware {
       return {
         status: false,
         code: 400,
-        message: "Os campos 'nome', 'email' e 'telefone' são obrigatórios.",
+        message:
+          "Os campos 'nome', 'email' e 'telefone' são obrigatórios.",
         data: [],
       };
     }
@@ -27,9 +24,7 @@ export class ProfessionalMiddleware {
     return { status: true };
   }
 
-  async handleUpdateProfessional(req: NextRequest) {
-    const body = await req.json().catch(() => null);
-
+  handleUpdateProfessional(body: any) {
     if (!body) {
       return {
         status: false,
@@ -45,7 +40,8 @@ export class ProfessionalMiddleware {
       return {
         status: false,
         code: 400,
-        message: "O campo 'id' é obrigatório para atualização.",
+        message:
+          "O campo 'id' é obrigatório para atualização.",
         data: [],
       };
     }
@@ -53,16 +49,13 @@ export class ProfessionalMiddleware {
     return { status: true };
   }
 
-  async handleDeleteProfessional(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
-
-    const id = searchParams.get("id");
-
+  handleDeleteProfessional(id: string | null) {
     if (!id) {
       return {
         status: false,
         code: 400,
-        message: "O campo 'id' é obrigatório para deleção.",
+        message:
+          "O campo 'id' é obrigatório para deleção.",
         data: [],
       };
     }

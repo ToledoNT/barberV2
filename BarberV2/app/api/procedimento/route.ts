@@ -67,10 +67,26 @@ export async function PUT(req: NextRequest) {
       allowedRoles
     );
 
-    if (!auth.ok) return auth.response;
+    if (!auth.ok) {
+      return auth.response;
+    }
+
+    const { searchParams } =
+      new URL(req.url);
+
+    const id =
+      searchParams.get("id");
+
+    if (!id) {
+      return RouteHelper.error(
+        "ID é obrigatório",
+        400
+      );
+    }
 
     const validation =
-      await procedimentoMiddleware.handleUpdateProcedimento(req);
+      await procedimentoMiddleware
+        .handleUpdateProcedimento(req);
 
     if (!validation.status) {
       return RouteHelper.error(
@@ -81,17 +97,38 @@ export async function PUT(req: NextRequest) {
 
     const data = validation.data;
 
-    if (!data || Array.isArray(data)) {
-      return RouteHelper.error("Dados inválidos", 400);
+    if (
+      !data ||
+      Array.isArray(data)
+    ) {
+      return RouteHelper.error(
+        "Dados inválidos",
+        400
+      );
     }
 
-    const controller = new UpdateProcedimentoController();
+    const { id: _, ...rest } = data;
 
-    const response = await controller.handle(data);
+    const controller =
+      new UpdateProcedimentoController();
 
-    return RouteHelper.success(response, response.code ?? 200);
-  } catch {
-    return RouteHelper.error("Erro interno", 500);
+    const response =
+      await controller.handle({
+        id,
+        ...rest,
+      });
+
+    return RouteHelper.success(
+      response,
+      response.code ?? 200
+    );
+  } catch (error) {
+    console.error(error);
+
+    return RouteHelper.error(
+      "Erro interno",
+      500
+    );
   }
 }
 

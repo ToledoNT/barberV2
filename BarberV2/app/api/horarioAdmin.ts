@@ -10,7 +10,6 @@ const api = axios.create({
 });
 
 export class HorarioService {
-  // ---------------- GET ALL ----------------
   async fetchAllHorarios(): Promise<
     HorarioDisponivel[]
   > {
@@ -35,7 +34,6 @@ export class HorarioService {
     }
   }
 
-  // ---------------- CREATE ----------------
   async createHorarioDisponivel(
     horario: Partial<HorarioDisponivel>
   ): Promise<
@@ -72,7 +70,6 @@ export class HorarioService {
     }
   }
 
-  // ---------------- UPDATE ----------------
   async updateHorario(
     id: string,
     horario: Partial<HorarioDisponivel>
@@ -107,7 +104,6 @@ export class HorarioService {
     }
   }
 
-  // ---------------- DELETE ----------------
   async deleteHorarioDisponivel(
     id: string
   ): Promise<void> {
@@ -134,7 +130,6 @@ export class HorarioService {
     }
   }
 
-  // ---------------- GET BY ID ----------------
   async fetchHorarioById(
     id: string
   ): Promise<HorarioDisponivel | null> {
@@ -157,38 +152,36 @@ export class HorarioService {
     }
   }
 
-  // ---------------- CREATE INDIVIDUAL ----------------
-  async createHorarioIndividual(
-    horario: Partial<HorarioDisponivel>
-  ): Promise<HorarioDisponivel> {
-    try {
-      const response = await api.post<
-        ResponseTemplateInterface<HorarioDisponivel>
-      >("/horario/individual", horario);
+async createHorarioIndividual(
+  horario: Partial<HorarioDisponivel>
+): Promise<HorarioDisponivel> {
+  try {
+    const response = await api.post<
+      ResponseTemplateInterface<HorarioDisponivel>
+    >("/horario", horario);
 
-      if (
-        !response.data.status ||
-        !response.data.data
-      ) {
-        throw new Error(
-          response.data.message ||
-            "Falha ao criar horário individual"
-        );
-      }
-
-      return response.data.data;
-    } catch (err: any) {
-      console.error(
-        "❌ Erro ao criar horário individual:",
-        err
+    if (
+      !response.data.status ||
+      !response.data.data
+    ) {
+      throw new Error(
+        response.data.message ||
+          "Falha ao criar horário individual"
       );
-
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Erro desconhecido ao criar horário individual";
-
-      throw new Error(msg);
     }
+
+    return response.data.data;
+  } catch (err: any) {
+    console.error(
+      "❌ Erro ao criar horário individual:",
+      err
+    );
+
+    const msg =
+      err?.response?.data?.message ||
+      err?.message ||
+      "Erro desconhecido ao criar horário individual";
+
+    throw new Error(msg);
   }
-}
+}}

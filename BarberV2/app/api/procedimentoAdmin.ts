@@ -1,22 +1,32 @@
 import axios from "axios";
+
 import { Procedimento } from "../interfaces/profissionaisInterface";
+
 import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
 
 const api = axios.create({
   baseURL: "/api",
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+  },
   withCredentials: true,
 });
 
 export class ProcedimentoService {
-  // ---------------- GET ALL ----------------
-  async fetchProcedimentos(): Promise<Procedimento[]> {
+  async fetchProcedimentos(): Promise<
+    Procedimento[]
+  > {
     try {
       const response = await api.get<
-        ResponseTemplateInterface<Procedimento[]>
+        ResponseTemplateInterface<
+          Procedimento[]
+        >
       >("/procedimento");
 
-      if (!response.data.status || !response.data.data) {
+      if (
+        !response.data.status ||
+        !response.data.data
+      ) {
         return [];
       }
 
@@ -26,20 +36,23 @@ export class ProcedimentoService {
         "Erro ao buscar procedimentos:",
         err
       );
+
       return [];
     }
   }
 
-  // ---------------- GET BY ID ----------------
   async fetchProcedimentoById(
     id: string
   ): Promise<Procedimento | null> {
     try {
       const response = await api.get<
         ResponseTemplateInterface<Procedimento>
-      >(`/procedimento/${id}`);
+      >(`/procedimento?id=${id}`);
 
-      if (!response.data.status || !response.data.data) {
+      if (
+        !response.data.status ||
+        !response.data.data
+      ) {
         return null;
       }
 
@@ -49,11 +62,11 @@ export class ProcedimentoService {
         "Erro ao buscar procedimento:",
         err
       );
+
       return null;
     }
   }
 
-  // ---------------- CREATE ----------------
   async createProcedimento(
     data: Partial<Procedimento>
   ): Promise<Procedimento> {
@@ -62,7 +75,10 @@ export class ProcedimentoService {
         ResponseTemplateInterface<Procedimento>
       >("/procedimento", data);
 
-      if (!response.data.status || !response.data.data) {
+      if (
+        !response.data.status ||
+        !response.data.data
+      ) {
         throw new Error(
           response.data.message ||
             "Erro ao criar procedimento"
@@ -77,13 +93,13 @@ export class ProcedimentoService {
       );
 
       throw new Error(
-        err.response?.data?.message ||
+        err?.response?.data?.message ||
+          err?.message ||
           "Erro ao criar procedimento"
       );
     }
   }
 
-  // ---------------- UPDATE ----------------
   async updateProcedimento(
     id: string,
     data: Partial<Procedimento>
@@ -91,9 +107,12 @@ export class ProcedimentoService {
     try {
       const response = await api.put<
         ResponseTemplateInterface<Procedimento>
-      >(`/procedimento/${id}`, data);
+      >(`/procedimento?id=${id}`, data);
 
-      if (!response.data.status || !response.data.data) {
+      if (
+        !response.data.status ||
+        !response.data.data
+      ) {
         throw new Error(
           response.data.message ||
             "Erro ao atualizar procedimento"
@@ -101,24 +120,27 @@ export class ProcedimentoService {
       }
 
       return response.data.data;
-    } catch (err) {
+    } catch (err: any) {
       console.error(
         "Erro ao atualizar procedimento:",
         err
       );
 
-      return null;
+      throw new Error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Erro ao atualizar procedimento"
+      );
     }
   }
 
-  // ---------------- DELETE ----------------
   async deleteProcedimento(
     id: string
   ): Promise<void> {
     try {
       const response = await api.delete<
         ResponseTemplateInterface<null>
-      >(`/procedimento/${id}`);
+      >(`/procedimento?id=${id}`);
 
       if (!response.data.status) {
         throw new Error(
@@ -133,7 +155,8 @@ export class ProcedimentoService {
       );
 
       throw new Error(
-        err.response?.data?.message ||
+        err?.response?.data?.message ||
+          err?.message ||
           "Erro ao deletar procedimento"
       );
     }
