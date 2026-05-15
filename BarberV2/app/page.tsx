@@ -172,7 +172,6 @@ function GroupMembersStep({
 export default function Home() {
   const flow = useAgendamentoFlow();
 
-  // ✅ selectedProfissional deve estar disponível no hook
   const {
     mainScreen,
     step,
@@ -355,7 +354,6 @@ export default function Home() {
     notify("Agendamento salvo.", "success");
   }
 
-  // Condições de validação para o grupo
   const todosGrupoCompletos =
     pessoasGrupo.length > 0 &&
     pessoasGrupo.every((pessoa) => grupoAgendamentos.some((a) => a.pessoaId === pessoa.id && a.completo));

@@ -11,6 +11,13 @@ interface UseEmailVerificationProps {
   onSuccess?: () => void;
 }
 
+export type ApiResponse<T = any> = {
+  status: boolean;
+  code?: number;
+  message?: string;
+  data?: T;
+};
+
 export function useEmailVerification({
   email,
   onSuccess,
@@ -52,28 +59,30 @@ export function useEmailVerification({
     }
   };
 
-  // ✅ VERIFICA O CÓDIGO (NÃO ENVIA AGENDAMENTO)
-  const verificarCodigo = async (codigo: string, notify?: Notify) => {
-    if (!codigo || codigo.length !== 6) {
-      throw new Error("Digite o código de 6 dígitos");
+const verificarCodigo = async (codigo: string, notify?: Notify) => {
+  if (!codigo || codigo.length !== 6) {
+    throw new Error("Digite o código de 6 dígitos");
+  }
+
+  setVerificando(true);
+
+  try {
+    const res = await service.verificarCodigo(email, codigo);
+
+    if (!res?.status) {
+      throw new Error(res?.message || "Código incorreto ou expirado");
     }
 
-    setVerificando(true);
-
-    try {
-      const ok = await service.verificarCodigo(email, codigo);
-      if (!ok) {
-        throw new Error("Código incorreto ou expirado");
-      }
-
-      notify?.("E-mail verificado com sucesso!", "success");
-      setEmailVerificado(true);
-      onSuccess?.();
-    } finally {
-      setVerificando(false);
-    }
-  };
-
+    notify?.("E-mail verificado com sucesso!", "success");
+    setEmailVerificado(true);
+    onSuccess?.();
+  } catch (error: any) {
+    notify?.(error.message || "Erro ao verificar código", "error");
+    throw error;
+  } finally {
+    setVerificando(false);
+  }
+};
   const reset = () => {
     setCodigoEnviado(false);
     setCodigoDigitado("");

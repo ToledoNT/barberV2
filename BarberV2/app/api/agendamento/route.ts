@@ -3,7 +3,6 @@ import { NextRequest } from "next/server";
 import { CreateAppointmentController } from "@/app/controller/appointments/create-agendamento-controller";
 import { GetAllAppointmentsController } from "@/app/controller/appointments/get-all-agendamentos-controler";
 import { UpdateAppointmentController } from "@/app/controller/appointments/update-agendamento-controller";
-import { DeleteAppointmentController } from "@/app/controller/appointments/delete-agendamento-controller";
 import { GetHorariosByBarbeiroController } from "@/app/controller/horarios/get-by-barbeiros-controller";
 
 import { AppointmentMiddleware } from "@/app/middleware/agendamento-middleware";

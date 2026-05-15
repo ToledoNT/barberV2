@@ -8,37 +8,59 @@ const api = axios.create({
 });
 
 export class EmailVerificationService {
-  // 🔥 MODIFICADO: agora aceita um terceiro parâmetro opcional "agendamento"
-  async enviarCodigo(email: string, nome: string, agendamento?: any): Promise<boolean> {
+  async enviarCodigo(
+    email: string,
+    nome: string,
+    agendamento?: any
+  ): Promise<ResponseTemplateInterface<null>> {
     try {
-      const response = await api.post<
-        ResponseTemplateInterface<null>
-      >("/emailverify", {
-        email,
-        nome,
-        agendamento,  
-      });
+      const response = await api.post<ResponseTemplateInterface<null>>(
+        "/emailverify",
+        {
+          email,
+          nome,
+          agendamento,
+        }
+      );
 
-      return response.data.status === true;
-    } catch (err) {
+      return response.data;
+    } catch (err: any) {
       console.error("enviarCodigo error:", err);
-      return false;
+
+      return {
+        status: false,
+        code: err?.response?.status || 500,
+        message:
+          err?.response?.data?.message || "Erro ao enviar código",
+        data: null,
+      };
     }
   }
 
-  async verificarCodigo(email: string, codigo: string): Promise<boolean> {
+  async verificarCodigo(
+    email: string,
+    codigo: string
+  ): Promise<ResponseTemplateInterface<null>> {
     try {
-      const response = await api.put<
-        ResponseTemplateInterface<null>
-      >("/emailverify", {
-        email,
-        codigo,
-      });
+      const response = await api.put<ResponseTemplateInterface<null>>(
+        "/emailverify",
+        {
+          email,
+          codigo,
+        }
+      );
 
-      return response.data.status === true;
-    } catch (err) {
+      return response.data;
+    } catch (err: any) {
       console.error("verificarCodigo error:", err);
-      return false;
+
+      return {
+        status: false,
+        code: err?.response?.status || 500,
+        message:
+          err?.response?.data?.message || "Erro ao verificar código",
+        data: null,
+      };
     }
   }
 }

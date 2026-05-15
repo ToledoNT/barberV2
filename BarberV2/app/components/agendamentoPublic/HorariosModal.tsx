@@ -44,11 +44,29 @@ export function HorariosModal({ isOpen, servicoNome, horarios, onClose, onSelect
   }, [isOpen, datasAgrupadas, selectedDate]);
 
   const horariosFiltrados = useMemo(() => {
-    if (!selectedDate) return [];
-    const grupo = datasAgrupadas.find((g) => g.data === selectedDate);
-    return grupo ? grupo.horarios : [];
-  }, [selectedDate, datasAgrupadas]);
+  if (!selectedDate) return [];
 
+  const grupo = datasAgrupadas.find(
+    (g) => g.data === selectedDate
+  );
+
+  if (!grupo) return [];
+
+  return [...grupo.horarios].sort((a, b) => {
+    const [horaA, minutoA] = a.inicio
+      .split(":")
+      .map(Number);
+
+    const [horaB, minutoB] = b.inicio
+      .split(":")
+      .map(Number);
+
+    const totalA = horaA * 60 + minutoA;
+    const totalB = horaB * 60 + minutoB;
+
+    return totalA - totalB;
+  });
+}, [selectedDate, datasAgrupadas]);
   if (!isOpen) return null;
 
   return (

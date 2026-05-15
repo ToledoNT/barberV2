@@ -33,7 +33,6 @@ const mapToAgendamento = (a: Agendamento): Agendamento => ({
   atualizadoEm: a.atualizadoEm || new Date().toISOString(),
 });
 
-// ------------------- COMPONENTE TIMEPICKER PROFISSIONAL -------------------
 interface TimePickerProps {
   value: string;
   onChange: (time: string) => void;
@@ -44,12 +43,10 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, label }) => {
   const [hours, setHours] = useState("08");
   const [minutes, setMinutes] = useState("00");
 
-  // Gerar horas de 00 até 23
   const hoursOptions = Array.from({ length: 24 }, (_, i) => 
     i.toString().padStart(2, '0')
   );
 
-  // Gerar minutos de 00 até 59
   const minutesOptions = Array.from({ length: 60 }, (_, i) => 
     i.toString().padStart(2, '0')
   );
@@ -87,7 +84,6 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, label }) => {
       </label>
       
       <div className="flex gap-2">
-        {/* Seletor de Horas */}
         <div className="flex-1">
           <div className="relative">
             <select
@@ -109,12 +105,10 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, label }) => {
           </div>
         </div>
 
-        {/* Separador */}
         <div className="flex items-center justify-center">
           <span className="text-gray-400 font-bold">:</span>
         </div>
 
-        {/* Seletor de Minutos */}
         <div className="flex-1">
           <div className="relative">
             <select
@@ -137,7 +131,6 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, label }) => {
         </div>
       </div>
 
-      {/* Preview do horário selecionado */}
       {value && (
         <div className="text-xs text-gray-400 text-center mt-1">
           Selecionado: <span className="text-[#FFA500] font-medium">{formatTimeLabel(value)}</span>
@@ -147,7 +140,6 @@ const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, label }) => {
   );
 };
 
-// ------------------- COMPONENT PRINCIPAL -------------------
 export default function CriarAgendamentoPage() {
   const router = useRouter();
 
@@ -168,7 +160,7 @@ export default function CriarAgendamentoPage() {
     form,
     setForm,
     fetchBarbeiros,
-    createHorarioIndividual, // ✅ JÁ ESTÁ NO SEU HOOK
+    createHorarioIndividual, 
   } = useAgendamentosAdmin();
 
   const [collapsed, setCollapsed] = useState(false);
@@ -185,13 +177,11 @@ export default function CriarAgendamentoPage() {
     barbeiro: "todos",
   });
 
-  // Estados para horário individual
   const [novoHorario, setNovoHorario] = useState({
     inicio: "",
     fim: "",
   });
 
-  // Estados para notificações e confirmações
   const [notification, setNotification] = useState<{
     isOpen: boolean;
     message: string;
@@ -215,7 +205,6 @@ export default function CriarAgendamentoPage() {
     onConfirm: null,
   });
 
-  // ------------------- FUNÇÕES DE NOTIFICAÇÃO -------------------
   const notify = (msg: string, type: "info" | "success" | "warning" | "error" = "info") => {
     setNotification({ isOpen: true, message: msg, type });
   };
@@ -254,7 +243,6 @@ export default function CriarAgendamentoPage() {
     closeConfirmDialog();
   };
 
-  // ------------------- VERIFICAÇÃO DE TOKEN -------------------
   useEffect(() => {
     const verifyAuth = async () => {
       setLoading(true);
@@ -335,7 +323,6 @@ export default function CriarAgendamentoPage() {
       return;
     }
 
-    // Validar se horário de início é antes do fim
     if (novoHorario.inicio >= novoHorario.fim) {
       notify("Horário de início deve ser anterior ao horário de fim.", "warning");
       return;
@@ -350,7 +337,6 @@ export default function CriarAgendamentoPage() {
     const dataParaBackend = new Date(form.data).toISOString().split("T")[0];
 
     try {
-      // ✅ AGORA USANDO O HOOK CORRETO QUE JÁ EXISTE
       await createHorarioIndividual({
         profissional: barbeiro,
         data: dataParaBackend,
@@ -441,11 +427,9 @@ export default function CriarAgendamentoPage() {
     });
   };
 
-  // ------------------- BLOQUEIO DE RENDER -------------------
   if (loading) return <Loader fullScreen={true} />;
   if (!isAuthenticated) return null;
 
-  // ------------------- JSX -------------------
   return (
     <>
       <Notification
@@ -632,7 +616,6 @@ export default function CriarAgendamentoPage() {
                       )}
                     </div>
 
-                    {/* Seção de geração automática de horários */}
                     <div className="bg-gradient-to-br from-[#1A1A1A] to-[#2A2A2A] border border-gray-700 rounded-xl p-4 sm:p-6 backdrop-blur-sm">
                       <h3 className="text-lg sm:text-xl font-semibold text-[#FFA500] mb-4 flex items-center gap-2">
                         <span>🔧</span>
@@ -715,7 +698,6 @@ export default function CriarAgendamentoPage() {
                 )}
               </div>
 
-              {/* ---------------- AGENDAMENTOS ---------------- */}
               <div className="bg-gradient-to-br from-[#111111] to-[#1A1A1A] border border-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-xl flex flex-col backdrop-blur-sm">
                 {/* Header Agendamentos */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6">
@@ -754,7 +736,6 @@ export default function CriarAgendamentoPage() {
                   </div>
                 </div>
 
-                {/* Conteúdo Agendamentos */}
                 <div className="flex-1 flex flex-col min-h-0">
                   {tabs.agendamento === "criar" && (
                     <div className="bg-gradient-to-br from-[#1A1A1A] to-[#2A2A2A] border border-gray-700 rounded-xl p-4 sm:p-6 lg:p-8 backdrop-blur-sm">

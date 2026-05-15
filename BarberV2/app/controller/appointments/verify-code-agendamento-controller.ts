@@ -80,34 +80,43 @@ export class VerificarCodigoController {
       };
     }
 
-    const horarioResponse =
-      await new GetHorarioByIdUseCase().execute(horarioId);
+    const horarioResponse = await new GetHorarioByIdUseCase().execute(horarioId);
 
-    if (!horarioResponse?.status || !horarioResponse.data) {
+    if (!horarioResponse?.status || !horarioResponse.data?.data) {
       return {
         status: false,
-        code: 404,
-        message: "Horário não encontrado.",
+        code: 409,
+        message:
+          "Esse horário não está mais disponível. Atualize a página e selecione outro horário.",
         data: [],
       };
     }
 
     const horario = horarioResponse.data.data;
 
-    const created =
-      await new CreateAppointmentUseCase().execute({
-        nome: payload.cliente.nome,
-        telefone: payload.cliente.telefone ?? "",
-        email: payload.cliente.email,
+    if (!horario?.data || !horario?.inicio || !horario?.fim) {
+      return {
+        status: false,
+        code: 409,
+        message:
+          "Horário inválido ou expirado. Atualize a página e tente novamente.",
+        data: [],
+      };
+    }
 
-        data: horario.data,
-        inicio: horario.inicio,
-        fim: horario.fim,
+    const created = await new CreateAppointmentUseCase().execute({
+      nome: payload.cliente.nome,
+      telefone: payload.cliente.telefone ?? "",
+      email: payload.cliente.email,
 
-        servico: servicoId,
-        profissional: profissionalId,
-        status: "AGENDADO",
-      } as any);
+      data: horario.data,
+      inicio: horario.inicio,
+      fim: horario.fim,
+
+      servico: servicoId,
+      profissional: profissionalId,
+      status: "AGENDADO",
+    } as any);
 
     if (!created?.status) {
       return {
@@ -153,8 +162,21 @@ export class VerificarCodigoController {
 
     const criarAgendamento = new CreateAppointmentUseCase();
     const resultados: any[] = [];
-
     let contadorAgendamentos = 0;
+
+    for (const p of participantes) {
+      const horario = p.horario;
+
+      if (!horario?.data || !horario?.inicio || !horario?.fim || !horario?.id) {
+        return {
+          status: false,
+          code: 409,
+          message:
+            "Um dos horários do grupo não está mais disponível. Atualize a página e selecione novamente.",
+          data: [],
+        };
+      }
+    }
 
     for (const p of participantes) {
       const profissionalId =
@@ -168,15 +190,6 @@ export class VerificarCodigoController {
           : p.servico?.id;
 
       const horario = p.horario;
-
-      if (!profissionalId || !servicoId || !horario?.id) {
-        return {
-          status: false,
-          code: 400,
-          message: "Dados inválidos no participante",
-          data: [],
-        };
-      }
 
       const created = await criarAgendamento.execute({
         nome: payload.cliente.nome,
@@ -204,7 +217,6 @@ export class VerificarCodigoController {
       await new DeleteHorarioUseCase().execute(horario.id);
 
       resultados.push(created);
-
       contadorAgendamentos++;
     }
 
@@ -226,11 +238,9 @@ export class VerificarCodigoController {
     try {
       const date = new Date(dataAgendamento);
 
-      const mesAno = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        1
-      );
+      if (isNaN(date.getTime())) return;
+
+      const mesAno = new Date(date.getFullYear(), date.getMonth(), 1);
 
       await new UpdateRelatorioUseCase().execute({
         mesAno,
@@ -248,11 +258,9 @@ export class VerificarCodigoController {
     try {
       const date = new Date(dataAgendamento);
 
-      const mesAno = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        1
-      );
+      if (isNaN(date.getTime())) return;
+
+      const mesAno = new Date(date.getFullYear(), date.getMonth(), 1);
 
       await new UpdateRelatorioUseCase().execute({
         mesAno,
