@@ -3,6 +3,7 @@ import { VerificarCodigoUseCase } from "@/app/use-case/agendamento/email-verify-
 import { GetHorarioByIdUseCase } from "@/app/use-case/horario/get-horario-by-id-use-case";
 import { DeleteHorarioUseCase } from "@/app/use-case/horario/delete-horario-use-case";
 import { UpdateRelatorioUseCase } from "@/app/use-case/relatorio/update-relatorio-use-case";
+import { SendEmailUseCase } from "@/app/use-case/resend/send-email-code";
 
 export class VerificarCodigoController {
   async handle(email: string, codigo: string) {
@@ -12,7 +13,9 @@ export class VerificarCodigoController {
         codigo,
       });
 
-      if (!result?.status) return result;
+      if (!result?.status) {
+        return result;
+      }
 
       const payload: any = result.data?.payload;
 
@@ -25,7 +28,9 @@ export class VerificarCodigoController {
         };
       }
 
-      const tipo = String(payload.tipo || "").trim().toLowerCase();
+      const tipo = String(payload.tipo || "")
+        .trim()
+        .toLowerCase();
 
       switch (tipo) {
         case "unico":
@@ -49,7 +54,10 @@ export class VerificarCodigoController {
         status: false,
         code: 500,
         message: "Erro interno do servidor.",
-        error: error instanceof Error ? error.message : "Erro desconhecido",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Erro desconhecido",
         data: [],
       };
     }
@@ -80,9 +88,13 @@ export class VerificarCodigoController {
       };
     }
 
-    const horarioResponse = await new GetHorarioByIdUseCase().execute(horarioId);
+    const horarioResponse =
+      await new GetHorarioByIdUseCase().execute(horarioId);
 
-    if (!horarioResponse?.status || !horarioResponse.data?.data) {
+    if (
+      !horarioResponse?.status ||
+      !horarioResponse.data?.data
+    ) {
       return {
         status: false,
         code: 409,
@@ -104,19 +116,20 @@ export class VerificarCodigoController {
       };
     }
 
-    const created = await new CreateAppointmentUseCase().execute({
-      nome: payload.cliente.nome,
-      telefone: payload.cliente.telefone ?? "",
-      email: payload.cliente.email,
+    const created =
+      await new CreateAppointmentUseCase().execute({
+        nome: payload.cliente.nome,
+        telefone: payload.cliente.telefone ?? "",
+        email: payload.cliente.email,
 
-      data: horario.data,
-      inicio: horario.inicio,
-      fim: horario.fim,
+        data: horario.data,
+        inicio: horario.inicio,
+        fim: horario.fim,
 
-      servico: servicoId,
-      profissional: profissionalId,
-      status: "AGENDADO",
-    } as any);
+        servico: servicoId,
+        profissional: profissionalId,
+        status: "AGENDADO",
+      } as any);
 
     if (!created?.status) {
       return {
@@ -130,6 +143,31 @@ export class VerificarCodigoController {
     await new DeleteHorarioUseCase().execute(horarioId);
 
     await this.atualizarRelatorio(horario.data);
+
+    await new SendEmailUseCase().execute({
+      from: "Agendamento <onboarding@resend.dev>",
+      to: payload.cliente.email,
+      subject: "Agendamento confirmado com sucesso",
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>Agendamento confirmado ✅</h2>
+
+          <p>
+            Seu e-mail foi confirmado com sucesso.
+          </p>
+
+          <p>
+            Seu agendamento está confirmado.
+          </p>
+
+          <br />
+
+          <p>
+            Aguardamos você no horário marcado.
+          </p>
+        </div>
+      `,
+    });
 
     return {
       status: true,
@@ -160,14 +198,22 @@ export class VerificarCodigoController {
       };
     }
 
-    const criarAgendamento = new CreateAppointmentUseCase();
+    const criarAgendamento =
+      new CreateAppointmentUseCase();
+
     const resultados: any[] = [];
+
     let contadorAgendamentos = 0;
 
     for (const p of participantes) {
       const horario = p.horario;
 
-      if (!horario?.data || !horario?.inicio || !horario?.fim || !horario?.id) {
+      if (
+        !horario?.data ||
+        !horario?.inicio ||
+        !horario?.fim ||
+        !horario?.id
+      ) {
         return {
           status: false,
           code: 409,
@@ -191,63 +237,108 @@ export class VerificarCodigoController {
 
       const horario = p.horario;
 
-      const created = await criarAgendamento.execute({
-        nome: payload.cliente.nome,
-        telefone: payload.cliente.telefone ?? "",
-        email: payload.cliente.email,
+      const created =
+        await criarAgendamento.execute({
+          nome: payload.cliente.nome,
+          telefone:
+            payload.cliente.telefone ?? "",
+          email: payload.cliente.email,
 
-        data: horario.data,
-        inicio: horario.inicio,
-        fim: horario.fim,
+          data: horario.data,
+          inicio: horario.inicio,
+          fim: horario.fim,
 
-        servico: servicoId,
-        profissional: profissionalId,
-        status: "AGENDADO",
-      } as any);
+          servico: servicoId,
+          profissional: profissionalId,
+          status: "AGENDADO",
+        } as any);
 
       if (!created?.status) {
         return {
           status: false,
           code: 500,
-          message: "Erro ao criar agendamento no grupo",
+          message:
+            "Erro ao criar agendamento no grupo",
           data: [],
         };
       }
 
-      await new DeleteHorarioUseCase().execute(horario.id);
+      await new DeleteHorarioUseCase().execute(
+        horario.id
+      );
 
       resultados.push(created);
+
       contadorAgendamentos++;
     }
 
-    const primeiraData = participantes[0]?.horario?.data;
+    const primeiraData =
+      participantes[0]?.horario?.data;
 
     if (primeiraData) {
-      await this.atualizarRelatorioGrupo(primeiraData, contadorAgendamentos);
+      await this.atualizarRelatorioGrupo(
+        primeiraData,
+        contadorAgendamentos
+      );
     }
+
+    await new SendEmailUseCase().execute({
+      from: "Agendamento <onboarding@resend.dev>",
+      to: payload.cliente.email,
+      subject: "Agendamentos confirmados com sucesso",
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>Agendamentos confirmados ✅</h2>
+
+          <p>
+            Seu e-mail foi confirmado com sucesso.
+          </p>
+
+          <p>
+            Todos os seus agendamentos foram confirmados.
+          </p>
+
+          <br />
+
+          <p>
+            Aguardamos vocês nos horários marcados.
+          </p>
+        </div>
+      `,
+    });
 
     return {
       status: true,
       code: 200,
-      message: "Agendamentos em grupo criados com sucesso",
+      message:
+        "Agendamentos em grupo criados com sucesso",
       data: resultados,
     };
   }
 
-  private async atualizarRelatorio(dataAgendamento: Date | string) {
+  private async atualizarRelatorio(
+    dataAgendamento: Date | string
+  ) {
     try {
       const date = new Date(dataAgendamento);
 
       if (isNaN(date.getTime())) return;
 
-      const mesAno = new Date(date.getFullYear(), date.getMonth(), 1);
+      const mesAno = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        1
+      );
 
       await new UpdateRelatorioUseCase().execute({
         mesAno,
         agendamentos: 1,
       });
     } catch (err) {
-      console.warn("Erro ao atualizar relatório:", err);
+      console.warn(
+        "Erro ao atualizar relatório:",
+        err
+      );
     }
   }
 
@@ -260,14 +351,21 @@ export class VerificarCodigoController {
 
       if (isNaN(date.getTime())) return;
 
-      const mesAno = new Date(date.getFullYear(), date.getMonth(), 1);
+      const mesAno = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        1
+      );
 
       await new UpdateRelatorioUseCase().execute({
         mesAno,
         agendamentos: quantidade,
       });
     } catch (err) {
-      console.warn("Erro ao atualizar relatório do grupo:", err);
+      console.warn(
+        "Erro ao atualizar relatório do grupo:",
+        err
+      );
     }
   }
 }

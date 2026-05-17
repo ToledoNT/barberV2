@@ -13,12 +13,13 @@ export class EnviarPreAgendamentoUseCase {
   ): Promise<ResponseTemplateInterface> {
     try {
       const repository = new PrismaEmailVerificationRepository();
+
       const codigo = randomInt(100000, 999999).toString();
+
       const hashedCode = await bcrypt.hash(codigo, 10);
 
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + 5);
-
 
       const existing = await repository.findLastByEmail(email);
 
@@ -29,7 +30,7 @@ export class EnviarPreAgendamentoUseCase {
           email,
           nome,
           code: hashedCode,
-          expiresAt, 
+          expiresAt,
           attempts: 0,
           tipo: agendamento?.tipo ?? "normal",
           payload: agendamento ?? {},
@@ -46,7 +47,6 @@ export class EnviarPreAgendamentoUseCase {
         });
       }
 
-  
       if (!responseCreate.status) {
         await new CreateLog().execute(responseCreate);
       }
@@ -57,6 +57,7 @@ export class EnviarPreAgendamentoUseCase {
         data: {
           email,
           nome,
+          codigo, 
           expiresAt,
           tipo: agendamento?.tipo ?? "normal",
         },
