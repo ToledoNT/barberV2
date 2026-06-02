@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/api/agendamentoAdmin.ts", "app/components/agendamento/AgendamentosGrid.tsx", "app/controller/get-all-agendamentos-controler"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/api/services/agendamentoAdmin.ts", "app/components/agendamento/AgendamentosGrid.tsx", "src/controller/get-all-agendamentos-controler"],
   "exclude": ["node_modules"]
 }

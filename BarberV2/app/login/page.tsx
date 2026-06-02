@@ -12,7 +12,7 @@ const FullScreenLoader = () => (
 );
 
 const MAX_ATTEMPTS = 5;
-const LOCKOUT_TIME = 5 * 60 * 1000; // 5 minutos
+const LOCKOUT_TIME = 5 * 60 * 1000;
 
 export default function LoginPage() {
   const { login, loading } = useAuth();

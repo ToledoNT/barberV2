@@ -1,18 +1,18 @@
 import { NextRequest } from "next/server";
 
-import { GetAllProfessionalsController } from "@/app/controller/profissional/get-all-profissional-controler";
-import { CreateProfessionalController } from "@/app/controller/profissional/create-profissional-controller";
-import { UpdateProfessionalController } from "@/app/controller/profissional/update-profissional-controller";
-import { DeleteProfessionalController } from "@/app/controller/profissional/delete-profissional-controller";
+import { GetAllProfessionalsController } from "@/src/controller/profissional/get-all-profissional-controler";
+import { CreateProfessionalController } from "@/src/controller/profissional/create-profissional-controller";
+import { UpdateProfessionalController } from "@/src/controller/profissional/update-profissional-controller";
+import { DeleteProfessionalController } from "@/src/controller/profissional/delete-profissional-controller";
 
-import { GetHorariosByBarbeiroController } from "@/app/controller/horarios/get-by-barbeiros-controller";
+import { GetHorariosByBarbeiroController } from "@/src/controller/horarios/get-by-barbeiros-controller";
 
-import { UserMiddleware } from "@/app/middleware/user-middleware";
-import { ProfessionalMiddleware } from "@/app/middleware/profissional-middleware";
 
 import { UserRole } from "../../../../../KingsBarberShopBackend/src/interface/user/create-user-interface";
 
 import { RouteHelper } from "@/app/helpers/auth-helper";
+import { UserMiddleware } from "@/src/middleware/user-middleware";
+import { ProfessionalMiddleware } from "@/src/middleware/profissional-middleware";
 
 const userMiddleware = new UserMiddleware();
 

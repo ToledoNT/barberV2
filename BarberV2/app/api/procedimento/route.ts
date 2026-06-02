@@ -1,15 +1,15 @@
 import { NextRequest } from "next/server";
 
-import { GetAllProcedimentosController } from "@/app/controller/procedimentos/get-all-procedimento-controller";
-import { CreateProcedimentoController } from "@/app/controller/procedimentos/create-procedimento-controller";
-import { UpdateProcedimentoController } from "@/app/controller/procedimentos/update-procedimento-controller";
-import { DeleteProcedimentoController } from "@/app/controller/procedimentos/delete-procedimento-controller";
+import { GetAllProcedimentosController } from "@/src/controller/procedimentos/get-all-procedimento-controller";
+import { CreateProcedimentoController } from "@/src/controller/procedimentos/create-procedimento-controller";
+import { UpdateProcedimentoController } from "@/src/controller/procedimentos/update-procedimento-controller";
+import { DeleteProcedimentoController } from "@/src/controller/procedimentos/delete-procedimento-controller";
 
-import { UserMiddleware } from "@/app/middleware/user-middleware";
-import { ProcedimentoMiddleware } from "@/app/middleware/procedimento-middleware";
 
 import { UserRole } from "../../../../../KingsBarberShopBackend/src/interface/user/create-user-interface";
 import { RouteHelper } from "@/app/helpers/auth-helper";
+import { UserMiddleware } from "@/src/middleware/user-middleware";
+import { ProcedimentoMiddleware } from "@/src/middleware/procedimento-middleware";
 
 const userMiddleware = new UserMiddleware();
 const procedimentoMiddleware = new ProcedimentoMiddleware();

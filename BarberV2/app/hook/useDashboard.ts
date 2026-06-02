@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { DashboardResponse } from "../interfaces/dashboardInterface";
-import { DashboardService } from "../api/dashboardAdmin";
+import { DashboardService } from "../api/services/dashboardAdmin";
 
 export function useDashboard() {
   const [data, setData] = useState<DashboardResponse | null>(null);

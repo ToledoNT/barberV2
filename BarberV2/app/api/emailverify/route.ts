@@ -1,5 +1,5 @@
-import { EnviarCodigoController } from "@/app/controller/appointments/enviar-email-pre-agendamento-controller";
-import { VerificarCodigoController } from "@/app/controller/appointments/verify-code-agendamento-controller";
+import { EnviarCodigoController } from "@/src/controller/appointments/enviar-email-pre-agendamento-controller";
+import { VerificarCodigoController } from "@/src/controller/appointments/verify-code-agendamento-controller";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {

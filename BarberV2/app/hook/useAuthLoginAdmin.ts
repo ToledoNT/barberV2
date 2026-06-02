@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { LoginData, UseAuthReturn, LoginResult } from "../interfaces/loginInterface";
-import { AuthService } from "../api/authAdmin";
+import { AuthService } from "../api/services/authAdmin";
 
 const authService = new AuthService();
 

@@ -1,16 +1,16 @@
 import { NextRequest } from "next/server";
 
-import { CreateAppointmentController } from "@/app/controller/appointments/create-agendamento-controller";
-import { GetAllAppointmentsController } from "@/app/controller/appointments/get-all-agendamentos-controler";
-import { UpdateAppointmentController } from "@/app/controller/appointments/update-agendamento-controller";
-import { GetHorariosByBarbeiroController } from "@/app/controller/horarios/get-by-barbeiros-controller";
+import { CreateAppointmentController } from "@/src/controller/appointments/create-agendamento-controller";
+import { GetAllAppointmentsController } from "@/src/controller/appointments/get-all-agendamentos-controler";
+import { UpdateAppointmentController } from "@/src/controller/appointments/update-agendamento-controller";
+import { GetHorariosByBarbeiroController } from "@/src/controller/horarios/get-by-barbeiros-controller";
 
-import { AppointmentMiddleware } from "@/app/middleware/agendamento-middleware";
-import { UserMiddleware } from "@/app/middleware/user-middleware";
 
 
 import { UserRole } from "../../../../../KingsBarberShopBackend/src/interface/user/create-user-interface";
 import { RouteHelper } from "@/app/helpers/auth-helper";
+import { AppointmentMiddleware } from "@/src/middleware/agendamento-middleware";
+import { UserMiddleware } from "@/src/middleware/user-middleware";
 
 const appointmentMiddleware = new AppointmentMiddleware();
 const userMiddleware = new UserMiddleware();

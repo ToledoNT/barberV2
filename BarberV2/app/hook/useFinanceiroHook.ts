@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { IFinanceiro } from "../interfaces/financeiroInterface";
-import { FinanceiroService } from "../api/financeiro-api-";
+import { FinanceiroService } from "../api/services/financeiro-api-";
 
 const financeiroService = new FinanceiroService();
 

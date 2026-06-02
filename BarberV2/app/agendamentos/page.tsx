@@ -14,7 +14,7 @@ import {
 import { AgendamentoHorario } from "../components/agendamento/AgendamentoHorario";
 import AgendamentoPrivadoForm from "../components/agendamento/AgendamentoPrivadoForm";
 import { AgendamentosGrid } from "../components/agendamento/AgendamentosGrid";
-import { AuthService } from "../api/authAdmin";
+import { AuthService } from "../api/services/authAdmin";
 import { ConfirmDialog } from "../components/ui/componenteConfirmação";
 import { Notification } from "../components/ui/componenteNotificacao";
 

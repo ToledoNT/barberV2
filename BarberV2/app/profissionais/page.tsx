@@ -11,7 +11,7 @@ import { ProfissionalForm } from "../components/profissional/ProfissionalForm";
 import { useProfissionaisAdmin } from "../hook/useProfissionaisAdmin";
 import { useProcedimentosAdmin } from "../hook/useProcedimentosAdmin";
 import ProcedimentoCard from "../components/profissional/ProcedimentoCard";
-import { AuthService } from "../api/authAdmin";
+import { AuthService } from "../api/services/authAdmin";
 import { useRouter } from "next/navigation";
 import { ProcedimentoInput } from "../interfaces/inputInterface";
 import { Notification } from "../components/ui/componenteNotificacao";

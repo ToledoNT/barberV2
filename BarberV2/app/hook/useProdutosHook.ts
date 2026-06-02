@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ProductService } from "../api/produtosApi";
+import { ProductService } from "../api/services/produtosApi";
 import { IProduto } from "../interfaces/produtosInterface";
 
 const produtoService = new ProductService();

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Procedimento } from "../interfaces/profissionaisInterface";
-import { ProcedimentoService } from "../api/procedimentoAdmin";
+import { ProcedimentoService } from "../api/services/procedimentoAdmin";
 
 const procedimentoService = new ProcedimentoService();
 

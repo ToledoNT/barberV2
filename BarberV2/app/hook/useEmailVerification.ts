@@ -1,6 +1,5 @@
-// hook/useEmailVerification.ts
 import { useState } from "react";
-import { EmailVerificationService } from "../api/emailVerification";
+import { EmailVerificationService } from "../api/services/emailVerification";
 
 const service = new EmailVerificationService();
 

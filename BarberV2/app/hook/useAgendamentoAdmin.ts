@@ -9,9 +9,9 @@ import {
   StatusAgendamento,
 } from "../interfaces/agendamentoInterface";
 
-import { ProfissionalService } from "../api/profissionaisAdmin";
-import { AppointmentService } from "../api/agendamentoAdmin";
-import { HorarioService } from "../api/horarioAdmin";
+import { ProfissionalService } from "../api/services/profissionaisAdmin";
+import { AppointmentService } from "../api/services/agendamentoAdmin";
+import { HorarioService } from "../api/services/horarioAdmin";
 import { Profissional } from "../../app/interfaces/profissionaisInterface";
 
 const appointmentService = new AppointmentService();

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { IFinanceiro } from "@/app/interfaces/financeiroInterface";
 import { useFinanceiro } from "@/app/hook/useFinanceiroHook";
 import Sidebar from "@/app/components/ui/Sidebar";
-import { AuthService } from "../api/authAdmin";
+import { AuthService } from "../api/services/authAdmin";
 import { Notification } from "../components/ui/componenteNotificacao"; // ADICIONEI AQUI
 
 const authService = new AuthService();

@@ -20,7 +20,6 @@ export interface LoadingProps {
   text?: string;
 }
 
-// Aqui você combina as propriedades que você precisa em uma única interface.
 export interface LoginResponseData {
   id: string;
   email: string;

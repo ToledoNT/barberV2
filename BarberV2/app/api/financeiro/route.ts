@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { UserMiddleware } from "@/app/middleware/user-middleware";
-import { GetAllFinanceiroController } from "@/app/controller/financeiro/get-all-financeiro-controller";
+import { GetAllFinanceiroController } from "@/src/controller/financeiro/get-all-financeiro-controller";
+import { UserMiddleware } from "@/src/middleware/user-middleware";
 
 const userMiddleware = new UserMiddleware();
 const getAllFinanceiroController = new GetAllFinanceiroController();

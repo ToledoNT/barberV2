@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AppointmentPublicService } from "../api/agendamentoPublic";
+import { AppointmentPublicService } from "../api/services/agendamentoPublic";
 import { Agendamento } from "../interfaces/agendamentoInterface";
 import { Profissional } from "../interfaces/profissionaisInterface";
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { LoginController } from "@/app/controller/user/login-controller";
+import { LoginController } from "@/src/controller/user/login-controller";
 import jwt from "jsonwebtoken";
 
 export async function POST(req: NextRequest) {
