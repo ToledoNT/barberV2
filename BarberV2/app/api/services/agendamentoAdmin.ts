@@ -109,7 +109,6 @@ export class AppointmentService {
     }
   }
 
-  // ---------------- HORÁRIOS DISPONÍVEIS (CORRETO AGORA) ----------------
   async fetchHorariosDisponiveis(
     barbeiro: string,
     data: string
