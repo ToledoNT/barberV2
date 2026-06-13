@@ -1,5 +1,5 @@
+import { ICreateFinanceiro } from "../../../../../KingsBarberShopBackend/src/interface/financeiro/create-financeiro-interface";
 import { PrismaFinanceiroRepository } from "../../db/prisma/respositories/prisma-financeiro-repository";
-import { ICreateFinanceiro } from "../../interface/financeiro/create-financeiro-interface";
 import { CreateLog } from "../logs/create-log";
 
 export class CreateFinanceiroUseCase {

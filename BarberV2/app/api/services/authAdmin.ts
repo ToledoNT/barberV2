@@ -36,16 +36,15 @@ export class AuthService {
     }
   }
 
-  async verifyToken(): Promise<boolean> {
-    try {
-      const response = await api.get("/user");
+async verifyToken(): Promise<boolean> {
+  try {
+    const response = await api.get("/user");
 
-      return response.data.status === true;
-    } catch (err) {
-      return false;
-    }
+    return (response.data as { status: boolean }).status === true;
+  } catch (err) {
+    return false;
   }
-
+}
   async logout(): Promise<void> {
     try {
       await api.delete("/user");

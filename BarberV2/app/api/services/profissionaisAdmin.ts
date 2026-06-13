@@ -20,13 +20,11 @@ export class ProfissionalService {
     signal?: AbortSignal
   ): Promise<Profissional[]> {
     try {
-      const res =
-        await api.get<
-          ResponseTemplateInterface<Profissional[]>
-        >("/profissional", {
-          ...(signal ? { signal } : {}),
-        });
-
+    const res = await api.get<
+  ResponseTemplateInterface<Profissional[]>
+>("/profissional", {
+  signal,
+} as any);
       return res.data.data ?? [];
     } catch (err: any) {
       if (

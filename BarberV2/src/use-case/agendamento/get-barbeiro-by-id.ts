@@ -1,5 +1,5 @@
+import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
 import { PrismaProfessionalRepository } from "../../db/prisma/respositories/prisma-profissional-repository";
-import { ResponseTemplateInterface } from "../../interface/response-template-interface"; // Interface de resposta
 import { CreateLog } from "../logs/create-log"; // Para criar logs, caso necessário
 
 export class GetBarbeiroByIdUseCase {

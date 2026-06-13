@@ -1,68 +1,81 @@
-import { type Request, type Response, type NextFunction } from "express";
+import { NextRequest, NextResponse } from "next/server";
 
 export class ProdutoMiddleware {
+  static handleCreateProduto(req: NextRequest, body: any) {
+    const {
+      nome,
+      preco,
+      estoque,
+      status,
+      descricao,
+      usuarioPendente,
+      categoria,
+    } = body;
 
-handleCreateProduto(req: Request, res: Response, next: NextFunction) {
-  const { nome, preco, estoque, status, descricao, usuarioPendente, categoria } = req.body;
-
-  if (!nome || typeof nome !== "string" || nome.trim().length === 0) {
-    return res.status(400).json({ error: "Nome do produto é obrigatório." });
-  }
-
-  if (preco === undefined || isNaN(Number(preco)) || Number(preco) < 0) {
-    return res.status(400).json({ error: "Preço inválido." });
-  }
-
-  if (estoque === undefined || isNaN(Number(estoque)) || Number(estoque) < 0) {
-    return res.status(400).json({ error: "Estoque inválido." });
-  }
-
-  const statusPermitidos = ["disponivel", "vendido", "consumido", "pendente"];
-  if (status && !statusPermitidos.includes(status)) {
-    return res.status(400).json({
-      error: `Status inválido. Valores permitidos: ${statusPermitidos.join(", ")}`,
-    });
-  }
-
-  if (descricao && typeof descricao !== "string") {
-    return res.status(400).json({ error: "Descrição inválida." });
-  }
-  if (usuarioPendente && typeof usuarioPendente !== "string") {
-    return res.status(400).json({ error: "Usuário pendente inválido." });
-  }
-  if (categoria && typeof categoria !== "string") {
-    return res.status(400).json({ error: "Categoria inválida." });
-  }
-
-  next();
-}
-
-  handleUpdateProduto(req: Request, res: Response, next: NextFunction) {
-    const { preco, quantidade, status } = req.body;
-
-    if (preco !== undefined && (isNaN(Number(preco)) || Number(preco) < 0)) {
-      return res.status(400).json({ error: "Preço inválido." });
+    if (!nome || typeof nome !== "string" || nome.trim().length === 0) {
+      return NextResponse.json(
+        { error: "Nome do produto é obrigatório." },
+        { status: 400 }
+      );
     }
 
-    if (quantidade !== undefined && (isNaN(Number(quantidade)) || Number(quantidade) < 0)) {
-      return res.status(400).json({ error: "Quantidade inválida." });
+    if (preco === undefined || isNaN(Number(preco)) || Number(preco) < 0) {
+      return NextResponse.json(
+        { error: "Preço inválido." },
+        { status: 400 }
+      );
     }
 
-    const statusPermitidos = ["disponivel", "vendido", "consumido", "pendente"];
-    if (status !== undefined && !statusPermitidos.includes(status)) {
-      return res.status(400).json({ error: `Status inválido. Valores permitidos: ${statusPermitidos.join(", ")}` });
+    if (
+      estoque === undefined ||
+      isNaN(Number(estoque)) ||
+      Number(estoque) < 0
+    ) {
+      return NextResponse.json(
+        { error: "Estoque inválido." },
+        { status: 400 }
+      );
     }
 
-    next();
-  }
+    const statusPermitidos = [
+      "disponivel",
+      "vendido",
+      "consumido",
+      "pendente",
+    ];
 
-  handleDeleteProduto(req: Request, res: Response, next: NextFunction) {
-    const { id } = req.params;
-
-    if (!id || typeof id !== "string") {
-      return res.status(400).json({ error: "ID do produto inválido." });
+    if (status && !statusPermitidos.includes(status)) {
+      return NextResponse.json(
+        {
+          error: `Status inválido. Valores permitidos: ${statusPermitidos.join(
+            ", "
+          )}`,
+        },
+        { status: 400 }
+      );
     }
 
-    next();
+    if (descricao && typeof descricao !== "string") {
+      return NextResponse.json(
+        { error: "Descrição inválida." },
+        { status: 400 }
+      );
+    }
+
+    if (usuarioPendente && typeof usuarioPendente !== "string") {
+      return NextResponse.json(
+        { error: "Usuário pendente inválido." },
+        { status: 400 }
+      );
+    }
+
+    if (categoria && typeof categoria !== "string") {
+      return NextResponse.json(
+        { error: "Categoria inválida." },
+        { status: 400 }
+      );
+    }
+
+    return null;
   }
 }
