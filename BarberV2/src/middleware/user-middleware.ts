@@ -1,6 +1,6 @@
+import { UserRole } from "@/interface/user/create-user-interface";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { NextRequest } from "next/server";
-import { UserRole } from "../../../../KingsBarberShopBackend/src/interface/user/create-user-interface";
 
 export class UserMiddleware {
   private attempts = new Map<string, { count: number; time: number }>();
