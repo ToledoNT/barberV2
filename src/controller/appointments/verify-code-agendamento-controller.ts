@@ -177,144 +177,121 @@ export class VerificarCodigoController {
     };
   }
 
-  private async processarGrupo(payload: any) {
-    const participantes = payload.participantes || [];
+ private async processarGrupo(payload: any) {
+  const participantes = payload.participantes || [];
 
-    if (!payload.cliente?.nome || !payload.cliente?.email) {
-      return {
-        status: false,
-        code: 400,
-        message: "Cliente inválido no payload",
-        data: [],
-      };
-    }
-
-    if (!participantes.length) {
-      return {
-        status: false,
-        code: 400,
-        message: "Nenhum participante encontrado",
-        data: [],
-      };
-    }
-
-    const criarAgendamento =
-      new CreateAppointmentUseCase();
-
-    const resultados: any[] = [];
-
-    let contadorAgendamentos = 0;
-
-    for (const p of participantes) {
-      const horario = p.horario;
-
-      if (
-        !horario?.data ||
-        !horario?.inicio ||
-        !horario?.fim ||
-        !horario?.id
-      ) {
-        return {
-          status: false,
-          code: 409,
-          message:
-            "Um dos horários do grupo não está mais disponível. Atualize a página e selecione novamente.",
-          data: [],
-        };
-      }
-    }
-
-    for (const p of participantes) {
-      const profissionalId =
-        typeof p.profissional === "string"
-          ? p.profissional
-          : p.profissional?.id;
-
-      const servicoId =
-        typeof p.servico === "string"
-          ? p.servico
-          : p.servico?.id;
-
-      const horario = p.horario;
-
-      const created =
-        await criarAgendamento.execute({
-          nome: payload.cliente.nome,
-          telefone:
-            payload.cliente.telefone ?? "",
-          email: payload.cliente.email,
-
-          data: horario.data,
-          inicio: horario.inicio,
-          fim: horario.fim,
-
-          servico: servicoId,
-          profissional: profissionalId,
-          status: "AGENDADO",
-        } as any);
-
-      if (!created?.status) {
-        return {
-          status: false,
-          code: 500,
-          message:
-            "Erro ao criar agendamento no grupo",
-          data: [],
-        };
-      }
-
-      await new DeleteHorarioUseCase().execute(
-        horario.id
-      );
-
-      resultados.push(created);
-
-      contadorAgendamentos++;
-    }
-
-    const primeiraData =
-      participantes[0]?.horario?.data;
-
-    if (primeiraData) {
-      await this.atualizarRelatorioGrupo(
-        primeiraData,
-        contadorAgendamentos
-      );
-    }
-
-    await new SendEmailUseCase().execute({
-      from: "Agendamento <onboarding@resend.dev>",
-      to: payload.cliente.email,
-      subject: "Agendamentos confirmados com sucesso",
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2>Agendamentos confirmados ✅</h2>
-
-          <p>
-            Seu e-mail foi confirmado com sucesso.
-          </p>
-
-          <p>
-            Todos os seus agendamentos foram confirmados.
-          </p>
-
-          <br />
-
-          <p>
-            Aguardamos vocês nos horários marcados.
-          </p>
-        </div>
-      `,
-    });
-
+  if (!payload.cliente?.email) {
     return {
-      status: true,
-      code: 200,
-      message:
-        "Agendamentos em grupo criados com sucesso",
-      data: resultados,
+      status: false,
+      code: 400,
+      message: "Cliente inválido no payload",
+      data: [],
     };
   }
+
+  if (!participantes.length) {
+    return {
+      status: false,
+      code: 400,
+      message: "Nenhum participante encontrado",
+      data: [],
+    };
+  }
+
+  const criarAgendamento = new CreateAppointmentUseCase();
+  const resultados: any[] = [];
+  let contadorAgendamentos = 0;
+
+  for (const p of participantes) {
+    const horario = p.horario;
+
+    if (!horario?.data || !horario?.inicio || !horario?.fim || !horario?.id) {
+      return {
+        status: false,
+        code: 409,
+        message:
+          "Um dos horários do grupo não está mais disponível. Atualize a página e selecione novamente.",
+        data: [],
+      };
+    }
+  }
+
+  for (const p of participantes) {
+    const profissionalId =
+      typeof p.profissional === "string"
+        ? p.profissional
+        : p.profissional?.id;
+
+    const servicoId =
+      typeof p.servico === "string"
+        ? p.servico
+        : p.servico?.id;
+
+    const horario = p.horario;
+
+    const created = await criarAgendamento.execute({
+      // 🔥 CORREÇÃO PRINCIPAL
+      nome: p.pessoaNome ?? "Sem nome",
+
+      telefone: payload.cliente.telefone ?? "",
+      email: payload.cliente.email,
+
+      data: horario.data,
+      inicio: horario.inicio,
+      fim: horario.fim,
+
+      servico: servicoId,
+      profissional: profissionalId,
+      status: "AGENDADO",
+    } as any);
+
+    if (!created?.status) {
+      return {
+        status: false,
+        code: 500,
+        message: "Erro ao criar agendamento no grupo",
+        data: [],
+      };
+    }
+
+    await new DeleteHorarioUseCase().execute(horario.id);
+
+    resultados.push(created);
+    contadorAgendamentos++;
+  }
+
+  const primeiraData = participantes[0]?.horario?.data;
+
+  if (primeiraData) {
+    await this.atualizarRelatorioGrupo(primeiraData, contadorAgendamentos);
+  }
+
+  await new SendEmailUseCase().execute({
+    from: "Agendamento <onboarding@resend.dev>",
+    to: payload.cliente.email,
+    subject: "Agendamentos confirmados com sucesso",
+    html: `
+      <div style="font-family: Arial, sans-serif; padding: 20px;">
+        <h2>Agendamentos confirmados ✅</h2>
+
+        <p>Seu e-mail foi confirmado com sucesso.</p>
+
+        <p>Todos os seus agendamentos foram confirmados.</p>
+
+        <br />
+
+        <p>Aguardamos vocês nos horários marcados.</p>
+      </div>
+    `,
+  });
+
+  return {
+    status: true,
+    code: 200,
+    message: "Agendamentos em grupo criados com sucesso",
+    data: resultados,
+  };
+}
 
   private async atualizarRelatorio(
     dataAgendamento: Date | string
