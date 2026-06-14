@@ -1,7 +1,7 @@
 
 import { ResponseTemplateInterface } from "@/interface/response-template-interface";
-import { PrismaProfessionalRepository } from "../../db/prisma/respositories/prisma-profissional-repository";
 import { CreateLog } from "../logs/create-log";
+import { PrismaProfessionalRepository } from "@/db/prisma/respositories/prisma-profissional-repository";
 
 export class DeleteProfissionalUseCase {
   async execute(id: string): Promise<ResponseTemplateInterface> {

@@ -1,9 +1,9 @@
 // CREATE
 
-import { PrismaProfessionalRepository } from "../../db/prisma/respositories/prisma-profissional-repository";
-import { CreateLog } from "../logs/create-log";
-import { ICreateProfessional } from "../../../../../KingsBarberShopBackend/src/interface/profissional/create-profissional";
 import { ResponseTemplateInterface } from "@/interface/response-template-interface";
+import { CreateLog } from "../logs/create-log";
+import { ICreateProfessional } from "@/interface/profissional/create-profissional";
+import { PrismaProfessionalRepository } from "@/db/prisma/respositories/prisma-profissional-repository";
 
 export class CreateProfissionalUseCase {
   async execute(
