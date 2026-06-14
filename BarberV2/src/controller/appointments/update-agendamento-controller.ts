@@ -1,11 +1,11 @@
 
-import { UpdateAppointmentUseCase } from "../../use-case/agendamento/update-agendamento-use-case";
-import { GetAppointmentByIdUseCase } from "../../use-case/agendamento/get-agendamento-by-id-use-case";
-import { UpdateRelatorioUseCase } from "../../use-case/relatorio/update-relatorio-use-case";
-import { CreateHorarioUseCase } from "../../use-case/horario/create-horario-use-case";
 import { ICreateHorario } from "@/interface/horario/create-horario-interface";
 import { CreateFinanceiroUseCase } from "@/use-case/financeiro/create-financeiro-use-case";
-import { StatusAgendamento } from "@/interface/agendamentos/create-agendamento-interface";
+import { GetAppointmentByIdUseCase } from "@/use-case/agendamento/get-agendamento-by-id-use-case";
+import { UpdateAppointmentUseCase } from "@/use-case/agendamento/update-agendamento-use-case";
+import { CreateHorarioUseCase } from "@/use-case/horario/create-horario-use-case";
+import { UpdateRelatorioUseCase } from "@/use-case/relatorio/update-relatorio-use-case";
+import { StatusAgendamento } from "@/interface/agendamentos/status-agendamento-interface";
 
 export class UpdateAppointmentController {
   async handle(body: {
@@ -26,9 +26,7 @@ export class UpdateAppointmentController {
     }
 
     const appointmentResponse =
-      await new GetAppointmentByIdUseCase().execute(
-        id
-      );
+      await new GetAppointmentByIdUseCase().execute(id);
 
     if (
       !appointmentResponse.status ||
@@ -42,8 +40,7 @@ export class UpdateAppointmentController {
       };
     }
 
-    const agendamento =
-      appointmentResponse.data;
+    const agendamento = appointmentResponse.data;
 
     const statusProtegidos = [
       StatusAgendamento.CONCLUIDO,
@@ -52,14 +49,10 @@ export class UpdateAppointmentController {
     ];
 
     if (
-      statusProtegidos.includes(
-        agendamento.status
-      ) &&
+      statusProtegidos.includes(agendamento.status) &&
       status !== agendamento.status
     ) {
-      const mensagens: Partial<
-        Record<StatusAgendamento, string>
-      > = {
+      const mensagens: Partial<Record<StatusAgendamento, string>> = {
         [StatusAgendamento.CONCLUIDO]:
           "Agendamento já concluído não pode ter o status alterado",
 
@@ -74,9 +67,8 @@ export class UpdateAppointmentController {
         status: false,
         code: 400,
         message:
-          mensagens[
-            agendamento.status as StatusAgendamento
-          ] ?? "Status inválido",
+          mensagens[agendamento.status as StatusAgendamento] ??
+          "Status inválido",
         data: [],
       };
     }
@@ -85,80 +77,60 @@ export class UpdateAppointmentController {
 
     try {
       updatedAppointment =
-        await new UpdateAppointmentUseCase().execute(
-          {
-            id,
-            status,
-          }
-        );
+        await new UpdateAppointmentUseCase().execute({
+          id,
+          status,
+        });
 
       /**
        * CONCLUÍDO
        */
       if (
-        status ===
-          StatusAgendamento.CONCLUIDO &&
-        agendamento.status !==
-          StatusAgendamento.CONCLUIDO
+        status === StatusAgendamento.CONCLUIDO &&
+        agendamento.status !== StatusAgendamento.CONCLUIDO
       ) {
         const clienteNome =
-          agendamento.nome ??
-          "Cliente não informado";
+          agendamento.nome ?? "Cliente não informado";
 
         const valor =
           agendamento.servicoPreco ??
           agendamento.servico?.valor ??
           0;
 
-        const profissionalId =
-          agendamento.profissionalId;
+        await new CreateFinanceiroUseCase().execute({
+          agendamentoId: agendamento.id,
+          clienteNome,
+          valor,
+          status: StatusAgendamento.PAGO,
+          profissionalNome: agendamento.profissionalNome,
+        });
 
-        const profissionalNome =
-          agendamento.profissionalNome;
-
-  await new CreateFinanceiroUseCase().execute({
-  agendamentoId: agendamento.id,
-  clienteNome,
-  valor,
-  status: StatusAgendamento.PAGO,
-  profissionalNome,
-});
-
-        await new UpdateRelatorioUseCase().execute(
-          {
-            mesAno: new Date(
-              agendamento.criadoEm.getFullYear(),
-              agendamento.criadoEm.getMonth(),
-              1
-            ),
-            faturamento: valor,
-          }
-        );
+        await new UpdateRelatorioUseCase().execute({
+          mesAno: new Date(
+            agendamento.criadoEm.getFullYear(),
+            agendamento.criadoEm.getMonth(),
+            1
+          ),
+          faturamento: valor,
+        });
       }
 
       /**
        * CANCELADO
        */
       if (
-        status ===
-          StatusAgendamento.CANCELADO &&
-        agendamento.status !==
-          StatusAgendamento.CANCELADO
+        status === StatusAgendamento.CANCELADO &&
+        agendamento.status !== StatusAgendamento.CANCELADO
       ) {
-        const horarioParaCriar: ICreateHorario =
-          {
-            profissionalId:
-              agendamento.profissionalId,
-            data: agendamento.data,
-            inicio:
-              agendamento.inicio,
-            fim: agendamento.fim,
-            disponivel: true,
-          };
+        const horarioParaCriar: ICreateHorario = {
+          profissionalId: agendamento.profissionalId,
+          data: agendamento.data,
+          inicio: agendamento.inicio,
+          fim: agendamento.fim,
+          disponivel: true,
+        };
 
-        await new CreateHorarioUseCase().execute(
-          horarioParaCriar
-        );
+        await new CreateHorarioUseCase().execute(horarioParaCriar);
 
         const mesAno = new Date(
           agendamento.criadoEm.getFullYear(),
@@ -166,22 +138,18 @@ export class UpdateAppointmentController {
           1
         );
 
-        await new UpdateRelatorioUseCase().execute(
-          {
-            mesAno,
-            cancelados: 1,
-          }
-        );
+        await new UpdateRelatorioUseCase().execute({
+          mesAno,
+          cancelados: 1,
+        });
       }
 
       /**
        * NÃO COMPARECEU
        */
       if (
-        status ===
-          StatusAgendamento.NAO_COMPARECEU &&
-        agendamento.status !==
-          StatusAgendamento.NAO_COMPARECEU
+        status === StatusAgendamento.NAO_COMPARECEU &&
+        agendamento.status !== StatusAgendamento.NAO_COMPARECEU
       ) {
         const mesAno = new Date(
           agendamento.criadoEm.getFullYear(),
@@ -189,12 +157,10 @@ export class UpdateAppointmentController {
           1
         );
 
-        await new UpdateRelatorioUseCase().execute(
-          {
-            mesAno,
-            naoCompareceu: 1,
-          }
-        );
+        await new UpdateRelatorioUseCase().execute({
+          mesAno,
+          naoCompareceu: 1,
+        });
       }
     } catch (err) {
       console.error(
@@ -205,8 +171,7 @@ export class UpdateAppointmentController {
       return {
         status: false,
         code: 500,
-        message:
-          "Erro ao atualizar agendamento",
+        message: "Erro ao atualizar agendamento",
         data: [],
       };
     }
@@ -214,8 +179,7 @@ export class UpdateAppointmentController {
     return {
       status: true,
       code: 200,
-      message:
-        "Agendamento atualizado com sucesso",
+      message: "Agendamento atualizado com sucesso",
       data: updatedAppointment,
     };
   }

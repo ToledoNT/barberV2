@@ -1,4 +1,4 @@
-import { StatusAgendamento } from "../agendamentos/create-agendamento-interface";
+import { StatusAgendamento } from "../agendamentos/status-agendamento-interface";
 
 export interface IUpdateFinanceiro {
   id: string; 
