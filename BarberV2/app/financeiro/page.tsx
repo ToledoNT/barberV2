@@ -2,11 +2,11 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { IFinanceiro } from "@/app/interfaces/financeiroInterface";
-import { useFinanceiro } from "@/app/hook/useFinanceiroHook";
-import Sidebar from "@/app/components/ui/Sidebar";
 import { AuthService } from "../api/services/authAdmin";
 import { Notification } from "../components/ui/componenteNotificacao"; // ADICIONEI AQUI
+import Sidebar from "app/components/ui/Sidebar";
+import { useFinanceiro } from "app/hook/useFinanceiroHook";
+import { IFinanceiro } from "app/interfaces/financeiroInterface";
 
 const authService = new AuthService();
 

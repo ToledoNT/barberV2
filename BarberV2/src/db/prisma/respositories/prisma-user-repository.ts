@@ -1,7 +1,7 @@
+import { ICreateUser } from "@/interface/user/create-user-interface";
 import { prisma } from "../prisma-connection";
-import { ICreateUser } from "../../../../../../KingsBarberShopBackend/src/interface/user/create-user-interface";
-import { ResponseTemplateModel } from "../../../../../../KingsBarberShopBackend/src/model/response-templete-model";
-import { ResponseTemplateInterface } from "../../../../../../KingsBarberShopBackend/src/interface/response-template-interface";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
+import { ResponseTemplateModel } from "@/model/response-templete-model";
 
 export class PrismaUserRepository {
   async create(data: ICreateUser): Promise<ResponseTemplateInterface> {

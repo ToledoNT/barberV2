@@ -1,4 +1,4 @@
-import { GetUserByEmailUseCase } from "@/src/use-case/user/get-user-by-email-use-case";
+import { GetUserByEmailUseCase } from "@/use-case/user/get-user-by-email-use-case";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 

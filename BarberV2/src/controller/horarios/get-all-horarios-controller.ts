@@ -1,4 +1,4 @@
-import { GetAllHorariosUseCase } from "../../use-case/horario/get-all-horario-use-case";
+import { GetAllHorariosUseCase } from "@/use-case/horario/get-all-horario-use-case";
 
 export class GetAllHorariosController {
   async handle() {

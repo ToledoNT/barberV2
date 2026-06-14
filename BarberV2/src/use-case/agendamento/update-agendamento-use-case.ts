@@ -1,7 +1,7 @@
-import { IUpdateAppointment } from "@/app/interfaces/agendamentos/update-agendamento-interface";
+import { ResponseTemplateInterface } from "app/interfaces/response-templete-interface";
 import { PrismaAppointmentRepository } from "../../db/prisma/respositories/prisma-agendamento-repository";
 import { CreateLog } from "../logs/create-log";
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
+import { IUpdateAppointment } from "app/interfaces/agendamentos/update-agendamento-interface";
 
 export class UpdateAppointmentUseCase {
   async execute(data: IUpdateAppointment): Promise<ResponseTemplateInterface> {

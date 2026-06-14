@@ -1,5 +1,5 @@
+import { PrismaEmailVerificationRepository } from "@/db/prisma/respositories/prismaEmailVerificationRepository";
 import bcrypt from "bcrypt";
-import { PrismaEmailVerificationRepository } from "../../db/prisma/respositories/prismaEmailVerificationRepository";
 
 interface IRequest {
   email: string;

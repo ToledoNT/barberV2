@@ -1,10 +1,9 @@
-import { CreateAppointmentUseCase } from "../../use-case/agendamento/create-agendamento-use-case";
-import { VerificarCodigoUseCase } from "../../use-case/agendamento/email-verify-code-agendamento";
-import { DeleteHorarioUseCase } from "../../use-case/horario/delete-horario-use-case";
-import { GetHorarioByIdUseCase } from "../../use-case/horario/get-horario-by-id-use-case";
-import { UpdateRelatorioUseCase } from "../../use-case/relatorio/update-relatorio-use-case";
-import { SendEmailUseCase } from "../../use-case/resend/send-email-code";
-
+import { CreateAppointmentUseCase } from "@/use-case/agendamento/create-agendamento-use-case";
+import { VerificarCodigoUseCase } from "@/use-case/agendamento/email-verify-code-agendamento";
+import { DeleteHorarioUseCase } from "@/use-case/horario/delete-horario-use-case";
+import { GetHorarioByIdUseCase } from "@/use-case/horario/get-horario-by-id-use-case";
+import { UpdateRelatorioUseCase } from "@/use-case/relatorio/update-relatorio-use-case";
+import { SendEmailUseCase } from "@/use-case/resend/send-email-code";
 
 export class VerificarCodigoController {
   async handle(email: string, codigo: string) {

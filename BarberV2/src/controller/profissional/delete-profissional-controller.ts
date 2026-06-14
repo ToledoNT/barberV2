@@ -1,4 +1,4 @@
-import { DeleteProfissionalUseCase } from "../../use-case/profissional/delete-profissional-use-case";
+import { DeleteProfissionalUseCase } from "@/use-case/profissional/delete-profissional-use-case";
 
 export class DeleteProfessionalController {
   async handle(profissionalId: string) {

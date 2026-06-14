@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Button from "../ui/Button";
 import ProcedimentoCard from "./ProcedimentoCard";
-import { Procedimento, ProcedimentosProfissionaisProps } from "@/app/interfaces/profissionaisInterface";
+import { Procedimento, ProcedimentosProfissionaisProps } from "app/interfaces/profissionaisInterface";
 
 export const ProcedimentosProfissionais: React.FC<ProcedimentosProfissionaisProps> = ({
   procedimentos,

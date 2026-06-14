@@ -2,10 +2,10 @@ import { prisma } from "../prisma-connection";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { Prisma } from "@prisma/client";
 
-import { ICreateProfessional } from "../../../../../../KingsBarberShopBackend/src/interface/profissional/create-profissional";
-import { IUpdateProfessional } from "../../../../../../KingsBarberShopBackend/src/interface/profissional/update-profissional-interface";
-import { ResponseTemplateInterface } from "../../../../../../KingsBarberShopBackend/src/interface/response-template-interface";
-import { ResponseTemplateModel } from "../../../../../../KingsBarberShopBackend/src/model/response-templete-model";
+import { ICreateProfessional } from "@/interface/profissional/create-profissional";
+import { IUpdateProfessional } from "@/interface/profissional/update-profissional-interface";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
+import { ResponseTemplateModel } from "@/model/response-templete-model";
 
 export class PrismaProfessionalRepository {
 

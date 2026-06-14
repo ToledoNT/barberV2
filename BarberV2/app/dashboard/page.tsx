@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
-import Sidebar from "@/app/components/ui/Sidebar";
 import { AuthService } from "../api/services/authAdmin";
 import { useDashboard } from "../hook/useDashboard";
 import MetricasDiarias from "../components/dashboard/MetricasDiarias";
@@ -12,6 +11,7 @@ import MetricasMensais from "../components/dashboard/MetricasMensais";
 import MetricasAnuais from "../components/dashboard/MetricasAnuais";
 import { Notification } from "../components/ui/componenteNotificacao";
 import HeaderDashboard from "../components/dashboard/HeraderDashboard";
+import Sidebar from "app/components/ui/Sidebar";
 
 const authService = new AuthService();
 

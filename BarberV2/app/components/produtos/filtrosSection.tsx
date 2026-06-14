@@ -1,16 +1,13 @@
-// components/produtos/filtrosSection.tsx
 "use client";
 
 import React from "react";
 
-// Interface para os filtros
 interface FiltrosState {
   busca: string;
   categoria: string;
   ordenacao: "nome" | "preco" | "estoque";
 }
 
-// Interface das props do componente
 interface FiltrosSectionProps {
   filtros: FiltrosState;
   categoriasDisponiveis: string[];

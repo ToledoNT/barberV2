@@ -2,7 +2,7 @@
 
 import React from "react";
 import Button from "../ui/Button";
-import { ProfissionalCardProps } from "@/app/interfaces/profissionaisInterface";
+import { ProfissionalCardProps } from "app/interfaces/profissionaisInterface";
 
 const ProfissionalCard: React.FC<ProfissionalCardProps> = ({
   profissional,

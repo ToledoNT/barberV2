@@ -1,9 +1,9 @@
 // UPDATE
 
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
-import { PrismaProfessionalRepository } from "../../db/prisma/respositories/prisma-profissional-repository";
+import { PrismaProfessionalRepository } from "@/db/prisma/respositories/prisma-profissional-repository";
+import { IUpdateProfessional } from "@/interface/profissional/update-profissional-interface";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
 import { CreateLog } from "../logs/create-log";
-import { IUpdateProfessional } from "../../../../../KingsBarberShopBackend/src/interface/profissional/update-profissional-interface";
 
 export class UpdateProfissionalUseCase {
   async execute(

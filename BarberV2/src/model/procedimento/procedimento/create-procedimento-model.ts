@@ -1,4 +1,4 @@
-import { ICreateProcedimento } from "../../../../../../KingsBarberShopBackend/src/interface/procedimento/create-procedimento-interface";
+import { ICreateProcedimento } from "@/interface/procedimento/create-procedimento-interface";
 
 export class CreateProcedimentoModel {
   nome: string;

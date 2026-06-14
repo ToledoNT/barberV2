@@ -1,9 +1,8 @@
 import { prisma } from "../prisma-connection";
-import { IUpdateRelatorio } from "../../../../../../KingsBarberShopBackend/src/interface/relatorio/update-relatorio-interface";
-import { ResponseTemplateInterface } from "../../../../../../KingsBarberShopBackend/src/interface/response-template-interface";
-import { ResponseTemplateModel } from "../../../../../../KingsBarberShopBackend/src/model/response-templete-model";
-import { UpdateRelatorioModel } from "../../../../../../KingsBarberShopBackend/src/model/relatorio/relatorio-model";
-
+import { IUpdateRelatorio } from "@/interface/relatorio/update-relatorio-interface";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
+import { ResponseTemplateModel } from "@/model/response-templete-model";
+import { UpdateRelatorioModel } from "@/model/relatorio/relatorio-model";
 export class PrismaRelatorioRepository {
   async create(data: IUpdateRelatorio): Promise<ResponseTemplateInterface> {
     try {

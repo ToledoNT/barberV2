@@ -1,7 +1,6 @@
+import { GetAllFinanceiroController } from "@/controller/financeiro/get-all-financeiro-controller";
+import { UserMiddleware } from "@/middleware/user-middleware";
 import { NextRequest, NextResponse } from "next/server";
-
-import { GetAllFinanceiroController } from "@/src/controller/financeiro/get-all-financeiro-controller";
-import { UserMiddleware } from "@/src/middleware/user-middleware";
 
 const userMiddleware = new UserMiddleware();
 const getAllFinanceiroController = new GetAllFinanceiroController();
@@ -18,7 +17,6 @@ export async function GET(req: NextRequest) {
 
     const user = authResponse.user;
 
-    // ROLE
     if (user.role !== "ADMIN") {
       return NextResponse.json(
         {
@@ -34,7 +32,6 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // CONTROLLER
     const response = await getAllFinanceiroController.handle(req);
 
     return NextResponse.json(response, {

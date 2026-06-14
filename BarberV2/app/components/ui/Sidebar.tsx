@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { Home, Calendar, DollarSign, Users, LogOut, Package } from "lucide-react";
-import { useAuth } from "@/app/hook/useAuthLoginAdmin";
+import { useAuth } from "app/hook/useAuthLoginAdmin";
 
 export type MenuItem = {
   name: string;

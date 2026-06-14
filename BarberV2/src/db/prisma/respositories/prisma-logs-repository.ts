@@ -1,4 +1,4 @@
-import { prisma } from "../prisma-connection"
+import { prisma } from "../prisma-connection";
 
 export class DatabaseLog {
   async create(value: any) {

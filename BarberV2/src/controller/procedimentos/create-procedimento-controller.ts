@@ -1,5 +1,5 @@
-import { ICreateProcedimento } from "../../../../../KingsBarberShopBackend/src/interface/procedimento/create-procedimento-interface";
-import { CreateProcedimentoUseCase } from "../../use-case/procedimento/create-procedimento-use-case.";
+import { ICreateProcedimento } from "@/interface/procedimento/create-procedimento-interface";
+import { CreateProcedimentoUseCase } from "@/use-case/procedimento/create-procedimento-use-case.";
 
 export class CreateProcedimentoController {
   async handle(data: ICreateProcedimento) {

@@ -1,5 +1,5 @@
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
-import { PrismaUserRepository } from "../../db/prisma/respositories/prisma-user-repository";
+import { PrismaUserRepository } from "@/db/prisma/respositories/prisma-user-repository";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
 import { CreateLog } from "../logs/create-log";
 
 export class GetUserByEmailUseCase {

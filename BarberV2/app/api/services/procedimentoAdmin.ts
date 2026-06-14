@@ -1,8 +1,6 @@
 import axios from "axios";
-
-import { Procedimento } from "../../interfaces/profissionaisInterface";
-
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
+import { ResponseTemplateInterface } from "app/interfaces/response-templete-interface";
+import { Procedimento } from "app/interfaces/agendamentoInterface";
 
 const api = axios.create({
   baseURL: "/api",

@@ -1,6 +1,6 @@
 import axios from "axios";
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
-import { IProduto } from "../../interfaces/produtosInterface";
+import { ResponseTemplateInterface } from "app/interfaces/response-templete-interface";
+import { IProduto } from "app/interfaces/produtosInterface";
 
 const api = axios.create({
   baseURL: "https://www.kingsbarber.com.br/api",

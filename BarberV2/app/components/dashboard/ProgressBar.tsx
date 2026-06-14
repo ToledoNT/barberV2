@@ -1,4 +1,3 @@
-// components/ProgressBar.tsx
 interface ProgressBarProps {
   value: number;
   max: number;

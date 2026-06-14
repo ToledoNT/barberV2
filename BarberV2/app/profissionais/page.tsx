@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import Sidebar from "@/app/components/ui/Sidebar";
 import Button from "../components/ui/Button";
 import Loader from "../components/ui/Loader";
 import { Profissional } from "../interfaces/profissionaisInterface";
@@ -15,6 +14,7 @@ import { AuthService } from "../api/services/authAdmin";
 import { useRouter } from "next/navigation";
 import { ProcedimentoInput } from "../interfaces/inputInterface";
 import { Notification } from "../components/ui/componenteNotificacao";
+import Sidebar from "app/components/ui/Sidebar";
 
 const authService = new AuthService();
 

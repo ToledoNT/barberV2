@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import Button from "../ui/Button";
-import { Profissional, Props } from "@/app/interfaces/profissionaisInterface";
 import ProfissionalCard from "./ProfissionalCard";
 import { ProfissionalForm } from "./ProfissionalForm";  
+import { Profissional, Props } from "app/interfaces/profissionaisInterface";
 
 const ProfissionaisSection: React.FC<Props> = ({
   profissionais,
@@ -63,18 +63,24 @@ const ProfissionaisSection: React.FC<Props> = ({
 
       {/* --- Lista de Profissionais --- */}
       {activeTab === "ver" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          {profissionais.length === 0 && <p className="text-gray-400">Nenhum profissional cadastrado.</p>}
-          {profissionais.map(p => (
-            <ProfissionalCard
-              key={p.id}
-              profissional={p}
-              onSelect={setSelectedProfissional}
-              onEdit={(prof) => { setSelectedProfissional(prof); setActiveTab("criar"); }}
-              onDelete={(id) => id && handleDelete(id)} // Garante compatibilidade com optional
-            />
-          ))}
-        </div>
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+  {profissionais.length === 0 && (
+    <p className="text-gray-400">Nenhum profissional cadastrado.</p>
+  )}
+
+  {profissionais.map((p) => (
+    <ProfissionalCard
+      key={p.id}
+      profissional={p}
+      onSelect={setSelectedProfissional}
+      onEdit={(prof: typeof p) => {
+        setSelectedProfissional(prof);
+        setActiveTab("criar");
+      }}
+      onDelete={(id: string) => id && handleDelete(id)}
+    />
+  ))}
+</div>
       )}
     </section>
   );

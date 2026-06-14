@@ -8,7 +8,7 @@ interface MetricasMensaisProps {
   agendamentosMes?: number;
   faturamentoMensal?: number;
   ticketMedio?: number;
-  taxaSucesso?: number; // ✅ Adicionada
+  taxaSucesso?: number; 
   taxaCancelamento?: number;
   totalConcluidos?: number;
   totalNaoCompareceu?: number;
@@ -26,7 +26,7 @@ const MetricasMensais = ({
   agendamentosMes = 0,
   faturamentoMensal = 0,
   ticketMedio = 0,
-  taxaSucesso = 0, // ✅ valor padrão
+  taxaSucesso = 0, 
   taxaCancelamento = 0,
   totalConcluidos = 0,
   totalNaoCompareceu = 0,

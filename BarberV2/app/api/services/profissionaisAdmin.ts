@@ -1,9 +1,7 @@
 import axios from "axios";
-import {
-  BarbeiroDadosResponse,
-  Profissional,
-} from "../../interfaces/profissionaisInterface";
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
+
+import { ResponseTemplateInterface } from "app/interfaces/response-templete-interface";
+import { BarbeiroDadosResponse, Profissional } from "app/interfaces/profissionaisInterface";
 
 const api = axios.create({
   baseURL: "/api",

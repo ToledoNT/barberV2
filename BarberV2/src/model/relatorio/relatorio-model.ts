@@ -1,4 +1,4 @@
-import { IUpdateRelatorio } from "../../../../../KingsBarberShopBackend/src/interface/relatorio/update-relatorio-interface";
+import { IUpdateRelatorio } from "@/interface/relatorio/update-relatorio-interface";
 
 export class UpdateRelatorioModel {
   mesAno: Date;

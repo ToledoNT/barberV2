@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
-import { Procedimento, ProcedimentoCardProps } from "@/app/interfaces/profissionaisInterface";
 import Button from "../ui/Button";
+import { ProcedimentoCardProps } from "app/interfaces/profissionaisInterface";
 
 const ProcedimentoCard: React.FC<ProcedimentoCardProps> = ({ procedimento, onEdit, onDelete }) => {
   const valorFormatado = useMemo(() => procedimento.valor.toFixed(2), [procedimento.valor]);

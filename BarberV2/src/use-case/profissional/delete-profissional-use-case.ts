@@ -1,6 +1,5 @@
-// DELETE
 
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
 import { PrismaProfessionalRepository } from "../../db/prisma/respositories/prisma-profissional-repository";
 import { CreateLog } from "../logs/create-log";
 

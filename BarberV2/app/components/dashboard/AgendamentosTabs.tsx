@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { AgendamentosTableProps } from "@/app/interfaces/dashboardInterface";
 import { motion, AnimatePresence } from "framer-motion";
+import { AgendamentosTableProps } from "app/interfaces/dashboardInterface";
 
 const formatStatus = (status: string) =>
   status

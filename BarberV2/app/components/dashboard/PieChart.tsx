@@ -1,4 +1,3 @@
-// components/PieChart.tsx
 interface PieChartProps {
   percentage: number;
   color: string;

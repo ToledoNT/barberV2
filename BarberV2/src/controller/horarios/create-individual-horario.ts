@@ -1,5 +1,5 @@
-import { CreateHorarioUseCase } from "@/src/use-case/horario/create-horario-use-case";
-import { ICreateHorario } from "../../../../../KingsBarberShopBackend/src/interface/horario/create-horario-interface";
+import { ICreateHorario } from "@/interface/horario/create-horario-interface";
+import { CreateHorarioUseCase } from "@/use-case/horario/create-horario-use-case";
 
 export class CreateHorarioIndividualController {
   async handle(body: any) {

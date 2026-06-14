@@ -1,5 +1,5 @@
-import { PrismaProfessionalRepository } from "@/src/db/prisma/respositories/prisma-profissional-repository";
-import { GetAllProfessionalsUseCase } from "../../use-case/profissional/get-all-profissional-use-case";
+import { PrismaProfessionalRepository } from "@/db/prisma/respositories/prisma-profissional-repository";
+import { GetAllProfessionalsUseCase } from "@/use-case/profissional/get-all-profissional-use-case";
 
 export class GetAllProfessionalsController {
   async handle() {

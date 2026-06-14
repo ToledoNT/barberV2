@@ -1,7 +1,6 @@
+import { GetDashboardMetricsController } from "@/controller/dashboard/dashbaord-controller";
+import { UserMiddleware } from "@/middleware/user-middleware";
 import { NextRequest, NextResponse } from "next/server";
-
-import { GetDashboardMetricsController } from "@/src/controller/dashboard/dashbaord-controller";
-import { UserMiddleware } from "@/src/middleware/user-middleware";
 
 const userMiddleware = new UserMiddleware();
 const getDashboardController = new GetDashboardMetricsController();

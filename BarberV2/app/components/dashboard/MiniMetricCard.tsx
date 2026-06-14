@@ -1,4 +1,3 @@
-// components/MiniMetricCard.tsx
 interface MiniMetricCardProps {
   title: string;
   value: string | number;

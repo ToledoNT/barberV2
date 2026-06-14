@@ -22,7 +22,7 @@ export const Notification: React.FC<NotificationProps> = ({
       setIsVisible(true);
       const timer = setTimeout(() => {
         setIsVisible(false);
-        setTimeout(onClose, 300); // Aguarda animação de saída
+        setTimeout(onClose, 300); 
       }, duration);
       return () => clearTimeout(timer);
     }

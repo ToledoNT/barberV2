@@ -1,7 +1,6 @@
-// components/ModalConfirmacaoStatus.tsx
 "use client";
 
-import { IProduto } from "@/app/interfaces/produtosInterface";
+import { IProduto } from "app/interfaces/produtosInterface";
 import React, { useState, useEffect } from "react";
 
 interface ModalConfirmacaoStatusProps {

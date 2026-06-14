@@ -1,4 +1,4 @@
-import { DeleteProcedimentoUseCase } from "../../use-case/procedimento/delete-procedimento-use-case";
+import { DeleteProcedimentoUseCase } from "@/use-case/procedimento/delete-procedimento-use-case";
 
 export class DeleteProcedimentoController {
   async handle(id: string) {

@@ -1,8 +1,8 @@
+import { PrismaRelatorioRepository } from "@/db/prisma/respositories/prisma-relatorio-repositorio";
+import { IUpdateRelatorio } from "@/interface/relatorio/update-relatorio-interface";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
+import { UpdateRelatorioModel } from "@/model/relatorio/relatorio-model";
 import { CreateLog } from "../logs/create-log";
-import { PrismaRelatorioRepository } from "../../db/prisma/respositories/prisma-relatorio-repositorio";
-import { UpdateRelatorioModel } from "../../model/relatorio/relatorio-model";
-import { IUpdateRelatorio } from "../../../../../KingsBarberShopBackend/src/interface/relatorio/update-relatorio-interface";
-import { ResponseTemplateInterface } from "../../../../../KingsBarberShopBackend/src/interface/response-template-interface";
 
 export class UpdateRelatorioUseCase {
   async execute(data: IUpdateRelatorio): Promise<ResponseTemplateInterface> {

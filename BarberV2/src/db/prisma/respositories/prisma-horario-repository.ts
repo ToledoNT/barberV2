@@ -1,7 +1,7 @@
 import { PrismaClient, HorarioDisponivel } from "@prisma/client";
-import { ICreateHorario } from "../../../../../../KingsBarberShopBackend/src/interface/horario/create-horario-interface";
-import { IUpdateHorario } from "../../../../../../KingsBarberShopBackend/src/interface/horario/update-horario";
-import { ResponseTemplateInterface } from "../../../../../../KingsBarberShopBackend/src/interface/response-template-interface";
+import { ICreateHorario } from "@/interface/horario/create-horario-interface";
+import { IUpdateHorario } from "@/interface/horario/update-horario";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
 
 const prisma = new PrismaClient();
 

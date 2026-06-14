@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
-import { ICreateFinanceiro } from "../../../../../../KingsBarberShopBackend/src/interface/financeiro/create-financeiro-interface";
-import { IUpdateFinanceiro } from "../../../../../../KingsBarberShopBackend/src/interface/financeiro/update-interface";
-import { ResponseTemplateInterface } from "../../../../../../KingsBarberShopBackend/src/interface/response-template-interface";
+import { ICreateFinanceiro } from "@/interface/financeiro/create-financeiro-interface";
+import { IUpdateFinanceiro } from "@/interface/financeiro/update-interface";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
 
 const prisma = new PrismaClient();
 

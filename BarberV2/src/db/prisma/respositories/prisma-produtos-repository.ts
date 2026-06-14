@@ -1,8 +1,8 @@
 import { prisma } from "../prisma-connection";
-import { ResponseTemplateInterface } from "../../../../../../KingsBarberShopBackend/src/interface/response-template-interface";
-import { ResponseTemplateModel } from "../../../../../../KingsBarberShopBackend/src/model/response-templete-model";
-import { ICreateProduto } from "../../../../../../KingsBarberShopBackend/src/interface/produtos/create-produto-interface";
-import { IUpdateProduto } from "../../../../../../KingsBarberShopBackend/src/interface/produtos/update-produto-interface";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
+import { ResponseTemplateModel } from "@/model/response-templete-model";
+import { ICreateProduto } from "@/interface/produtos/create-produto-interface";
+import { IUpdateProduto } from "@/interface/produtos/update-produto-interface";
 
 export class PrismaProdutoRepository {
   async create(data: ICreateProduto): Promise<ResponseTemplateInterface> {

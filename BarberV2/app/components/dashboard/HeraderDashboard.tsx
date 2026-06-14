@@ -1,6 +1,6 @@
-import { HeaderDashboardProps } from "@/app/interfaces/dashboardInterface";
 import { useMemo } from "react";
 import { RefreshCcw } from "lucide-react";
+import { HeaderDashboardProps } from "app/interfaces/dashboardInterface";
 
 const HeaderDashboard = ({ onRefresh }: HeaderDashboardProps) => {
   const hoje = useMemo(

@@ -1,4 +1,4 @@
-import { GetProfessionalFullDataController } from "@/src/controller/profissional/get-profissional-full-data-controller";
+import { GetProfessionalFullDataController } from "@/controller/profissional/get-profissional-full-data-controller";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest): Promise<NextResponse> {

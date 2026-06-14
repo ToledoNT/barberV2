@@ -2,8 +2,8 @@ import bcrypt from "bcrypt";
 import { randomInt } from "crypto";
 
 import { CreateLog } from "../logs/create-log";
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
 import { PrismaEmailVerificationRepository } from "../../db/prisma/respositories/prismaEmailVerificationRepository";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
 
 export class EnviarPreAgendamentoUseCase {
   async execute(

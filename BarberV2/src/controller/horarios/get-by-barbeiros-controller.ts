@@ -1,10 +1,7 @@
-import {
-  HorarioDTO,
-  ProcedimentoDTO,
-} from "@/app/interfaces/horario/get-horario-barbeiro-interface";
 
+import { GetProcedimentosByProfissionalUseCase } from "@/use-case/procedimento/fetch-by-profissional-use-case";
 import { GetHorariosByBarbeiroUseCase } from "../../use-case/horario/get-by-barbeiro-use-case";
-import { GetProcedimentosByProfissionalUseCase } from "@/src/use-case/procedimento/fetch-by-profissional-use-case";
+import { HorarioDTO, ProcedimentoDTO } from "app/interfaces/horario/get-horario-barbeiro-interface";
 
 export class GetHorariosByBarbeiroController {
   async handle(barbeiro: string, data?: string) {

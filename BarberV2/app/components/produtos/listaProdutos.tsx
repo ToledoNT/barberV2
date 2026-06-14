@@ -1,4 +1,4 @@
-import { IProduto } from "@/app/interfaces/produtosInterface";
+import { IProduto } from "app/interfaces/produtosInterface";
 import { ProdutoItem } from "./produtoItem";
 
 interface ListaProdutosProps {

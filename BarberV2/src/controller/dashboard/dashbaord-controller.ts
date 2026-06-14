@@ -1,15 +1,11 @@
+import { ResponseTemplateModel } from "@/model/response-templete-model";
+import { GetAllAppointmentsUseCase } from "@/use-case/agendamento/get-all-agendamento-use-case";
+import { GetAllFinanceiroUseCase } from "@/use-case/financeiro/get-all-financeiro";
+import { GetAllRelatorioUseCase } from "@/use-case/relatorio/get-all-relatorio-use-case";
+import { IAppointment } from "app/interfaces/agendamentos/create-agendamento-interface";
+import { IFinance, IRelatorio } from "app/interfaces/relatorio/dashboard-interface";
 import { NextRequest } from "next/server";
 
-import { GetAllAppointmentsUseCase } from "../../use-case/agendamento/get-all-agendamento-use-case";
-import { GetAllFinanceiroUseCase } from "../../use-case/financeiro/get-all-financeiro";
-import { GetAllRelatorioUseCase } from "../../use-case/relatorio/get-all-relatorio-use-case";
-
-import {
-  IFinance,
-  IRelatorio,
-} from "../../../app/interfaces/relatorio/dashboard-interface";
-import { ResponseTemplateModel } from "../../../../../KingsBarberShopBackend/src/model/response-templete-model";
-import { IAppointment } from "@/app/interfaces/agendamentos/create-agendamento-interface";
 
 export class GetDashboardMetricsController {
   async handle(req: NextRequest) {

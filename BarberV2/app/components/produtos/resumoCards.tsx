@@ -1,8 +1,7 @@
 "use client";
 
+import { useProdutos } from "app/hook/useProdutosHook";
 import { ReactNode, useMemo } from "react";
-import { IProduto } from "@/app/interfaces/produtosInterface";
-import { useProdutos } from "@/app/hook/useProdutosHook";
 
 interface ResumoCardProps {
   emoji: string;

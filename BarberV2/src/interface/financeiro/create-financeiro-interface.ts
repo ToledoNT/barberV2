@@ -1,4 +1,4 @@
-import { StatusAgendamento } from "../agendamentos/create-agendamento-interface";
+import { StatusAgendamento } from "app/interfaces/agendamentoInterface";
 
 export interface ICreateFinanceiro {
   id?: string;
@@ -7,7 +7,6 @@ export interface ICreateFinanceiro {
   profissionalNome?: string;
   clienteNome: string;
   valor: number;
-  status?: StatusAgendamento;
-  criadoEm?: Date;
+  status?: "Agendado" | "Em Andamento" | "Concluído" | "Cancelado" | "Não Compareceu" | "Pendente" | "Pago";  criadoEm?: Date;
   atualizadoEm?: Date;
 }

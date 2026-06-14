@@ -1,7 +1,7 @@
-import { IUpdateHorario } from "@/app/interfaces/horario/update-horario";
-import { PrismaHorarioRepository } from "../../db/prisma/respositories/prisma-horario-repository";
+import { PrismaHorarioRepository } from "@/db/prisma/respositories/prisma-horario-repository";
+import { IUpdateHorario } from "@/interface/horario/update-horario";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
 import { CreateLog } from "../logs/create-log";
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
 
 export class UpdateHorarioUseCase {
   async execute(id: string, horario: IUpdateHorario): Promise<ResponseTemplateInterface> {

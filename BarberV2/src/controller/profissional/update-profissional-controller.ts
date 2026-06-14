@@ -1,5 +1,5 @@
-import { IUpdateProfessional } from "../../../../../KingsBarberShopBackend/src/interface/profissional/update-profissional-interface";
-import { UpdateProfissionalUseCase } from "../../use-case/profissional/update-profissional-use-case";
+import { IUpdateProfessional } from "@/interface/profissional/update-profissional-interface";
+import { UpdateProfissionalUseCase } from "@/use-case/profissional/update-profissional-use-case";
 
 export class UpdateProfessionalController {
   async handle(data: IUpdateProfessional) {

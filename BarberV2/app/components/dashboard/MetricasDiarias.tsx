@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import MetricCard from "./MetricaCard";
-import { MetricasDiariasProps } from "@/app/interfaces/dashboardInterface";
+import { MetricasDiariasProps } from "app/interfaces/dashboardInterface";
 
 const MetricasDiarias = ({ agendamentosHoje, faturamentoHoje, concluidosHoje }: MetricasDiariasProps) => {
   const performanceHoje = useMemo(

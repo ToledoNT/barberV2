@@ -1,4 +1,4 @@
-import { IUpdateProcedimento } from "../../../../../../KingsBarberShopBackend/src/interface/procedimento/update-procedimento-interface";
+import { IUpdateProcedimento } from "@/interface/procedimento/update-procedimento-interface";
 
 export class UpdateProcedimentoModel {
   id: string;

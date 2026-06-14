@@ -1,7 +1,7 @@
 import { prisma } from "../prisma-connection";
 import { ResponseTemplateModel } from "../../../../../../KingsBarberShopBackend/src/model/response-templete-model";
 import { ResponseTemplateInterface } from "../../../../../../KingsBarberShopBackend/src/interface/response-template-interface";
-import { ICreateEmailVerification } from "@/app/interfaces/agendamentos/create-agendamento-interface";
+import { ICreateEmailVerification } from "@/interface/email/create-email-verifycation";
 
 export class PrismaEmailVerificationRepository {
 

@@ -1,4 +1,4 @@
-import { DeleteHorarioUseCase } from "../../use-case/horario/delete-horario-use-case";
+import { DeleteHorarioUseCase } from "@/use-case/horario/delete-horario-use-case";
 
 export class DeleteHorarioController {
   async handle(id: string) {

@@ -1,19 +1,14 @@
+import { CreateHorarioIndividualController } from "@/controller/horarios/create-individual-horario";
+import { DeleteHorarioController } from "@/controller/horarios/delete-horario-controller";
+import { CreateHorarioController } from "@/controller/horarios/generate-horario-controller";
+import { GetAllHorariosController } from "@/controller/horarios/get-all-horarios-controller";
+import { GetHorariosByBarbeiroController } from "@/controller/horarios/get-by-barbeiros-controller";
+import { UpdateHorarioController } from "@/controller/horarios/update-horario-controller";
+import { UserRole } from "@/interface/user/create-user-interface";
+import { HorarioMiddleware } from "@/middleware/horario-middleware";
+import { UserMiddleware } from "@/middleware/user-middleware";
+import { RouteHelper } from "app/helpers/auth-helper";
 import { NextRequest } from "next/server";
-
-import { CreateHorarioController } from "@/src/controller/horarios/generate-horario-controller";
-
-import { GetAllHorariosController } from "@/src/controller/horarios/get-all-horarios-controller";
-import { UpdateHorarioController } from "@/src/controller/horarios/update-horario-controller";
-import { DeleteHorarioController } from "@/src/controller/horarios/delete-horario-controller";
-import { GetHorariosByBarbeiroController } from "@/src/controller/horarios/get-by-barbeiros-controller";
-
-
-import { UserRole } from "../../../../../KingsBarberShopBackend/src/interface/user/create-user-interface";
-
-import { RouteHelper } from "@/app/helpers/auth-helper";
-import { CreateHorarioIndividualController } from "@/src/controller/horarios/create-individual-horario";
-import { UserMiddleware } from "@/src/middleware/user-middleware";
-import { HorarioMiddleware } from "@/src/middleware/horario-middleware";
 
 const userMiddleware = new UserMiddleware();
 const horarioMiddleware = new HorarioMiddleware();

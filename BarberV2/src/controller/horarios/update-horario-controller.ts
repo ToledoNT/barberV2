@@ -1,5 +1,5 @@
-import { IUpdateHorario } from "@/app/interfaces/horario/update-horario";
-import { UpdateHorarioUseCase } from "../../use-case/horario/update-horario-use-case";
+import { IUpdateHorario } from "@/interface/horario/update-horario";
+import { UpdateHorarioUseCase } from "@/use-case/horario/update-horario-use-case";
 
 export class UpdateHorarioController {
   async handle(body: any) {

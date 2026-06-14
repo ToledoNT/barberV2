@@ -1,5 +1,5 @@
+import { ResponseTemplateInterface } from "app/interfaces/response-templete-interface";
 import axios from "axios";
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
 
 const api = axios.create({
   baseURL: "/api",

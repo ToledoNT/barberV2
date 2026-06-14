@@ -1,5 +1,5 @@
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
-import { PrismaAppointmentRepository } from "../../db/prisma/respositories/prisma-agendamento-repository";
+import { PrismaAppointmentRepository } from "@/db/prisma/respositories/prisma-agendamento-repository";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
 import { CreateLog } from "../logs/create-log";
 
 export class GetAllAppointmentsUseCase {

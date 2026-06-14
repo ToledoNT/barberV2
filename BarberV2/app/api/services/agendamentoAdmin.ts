@@ -1,6 +1,6 @@
 import axios from "axios";
-import { Agendamento } from "../../interfaces/agendamentoInterface";
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
+import { ResponseTemplateInterface } from "app/interfaces/response-templete-interface";
+import { Agendamento } from "app/interfaces/agendamentoInterface";
 
 const api = axios.create({
   baseURL: "/api",

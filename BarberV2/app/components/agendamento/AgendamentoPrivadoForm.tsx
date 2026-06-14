@@ -144,30 +144,37 @@ const AgendamentoPrivadoForm: React.FC<AgendamentoPrivadoFormProps> = ({
         </h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4" noValidate>
-          <Input
-            name="nome"
-            value={localForm.nome}
-            placeholder="Nome"
-            onChange={(e) => setLocalForm({ ...localForm, nome: e.target.value })}
-            required
-          />
+        <Input
+        name="nome"
+        value={localForm.nome}
+        placeholder="Nome"
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+        setLocalForm({ ...localForm, nome: e.target.value })
+     }
+      required
+      />
 
-          <Input
-            name="telefone"
-            value={localForm.telefone}
-            placeholder="Telefone"
-            onChange={(e) =>
-              setLocalForm({ ...localForm, telefone: e.target.value.replace(/\D/g, "") })
-            }
-            required
-          />
+        <Input
+        name="telefone"
+        value={localForm.telefone}
+        placeholder="Telefone"
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+        setLocalForm({
+        ...localForm,
+        telefone: e.target.value.replace(/\D/g, ""),
+    })
+  }
+  required
+/>
 
-          <Input
-            name="email"
-            value={localForm.email}
-            placeholder="Email (opcional)"
-            onChange={(e) => setLocalForm({ ...localForm, email: e.target.value })}
-          />
+        <Input
+        name="email"
+        value={localForm.email}
+        placeholder="Email (opcional)"
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+        setLocalForm({ ...localForm, email: e.target.value })
+     }
+/>
 
           <Select
             name="barbeiro"

@@ -1,5 +1,6 @@
-import { GetAllFinanceiroUseCase } from "@/src/use-case/financeiro/get-all-financeiro";
-import { GetAllProdutosUseCase } from "@/src/use-case/produtos/get-all-produtos";
+
+import { GetAllFinanceiroUseCase } from "@/use-case/financeiro/get-all-financeiro";
+import { GetAllProdutosUseCase } from "@/use-case/produtos/get-all-produtos";
 import { NextRequest, NextResponse } from "next/server";
 
 

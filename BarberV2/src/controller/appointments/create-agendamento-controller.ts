@@ -1,13 +1,11 @@
-import {
-  ICreateAppointment,
-  StatusAgendamento,
-} from "../../../app/interfaces/agendamentos/create-agendamento-interface";
 
 import { GetHorarioByIdUseCase } from "../../use-case/horario/get-horario-by-id-use-case";
-import { DeleteHorarioUseCase } from "../../use-case/horario/delete-horario-use-case";
-import { GetBarbeiroByIdUseCase } from "@/src/use-case/agendamento/get-barbeiro-by-id";
-import { CreateAppointmentUseCase } from "@/src/use-case/agendamento/create-agendamento-use-case";
-import { UpdateRelatorioUseCase } from "@/src/use-case/relatorio/update-relatorio-use-case";
+import { GetBarbeiroByIdUseCase } from "@/use-case/agendamento/get-barbeiro-by-id";
+import { CreateAppointmentUseCase } from "@/use-case/agendamento/create-agendamento-use-case";
+import { UpdateRelatorioUseCase } from "@/use-case/relatorio/update-relatorio-use-case";
+import { DeleteHorarioUseCase } from "@/use-case/horario/delete-horario-use-case";
+import { ICreateAppointment } from "@/interface/agendamentos/create-agendamento-interface";
+import { StatusAgendamento } from "app/interfaces/agendamentoInterface";
 
 export class CreateAppointmentController {
   async handle(body: any) {

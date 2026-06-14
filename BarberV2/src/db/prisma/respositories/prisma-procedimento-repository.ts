@@ -1,8 +1,7 @@
 import { PrismaClient } from "@prisma/client";
-import { ICreateProcedimento } from "../../../../../../KingsBarberShopBackend/src/interface/procedimento/create-procedimento-interface";
-import { IUpdateProcedimento } from "../../../../../../KingsBarberShopBackend/src/interface/procedimento/update-procedimento-interface";
-import { ResponseTemplateInterface } from "../../../../../../KingsBarberShopBackend/src/interface/response-template-interface";
-
+import { ICreateProcedimento } from "@/interface/procedimento/create-procedimento-interface";
+import { IUpdateProcedimento } from "@/interface/procedimento/update-procedimento-interface";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
 const prisma = new PrismaClient();
 
 export class PrismaProcedimentoRepository {

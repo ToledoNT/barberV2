@@ -1,4 +1,4 @@
-import { ICreateUser, UserRole } from "../../../../../KingsBarberShopBackend/src/interface/user/create-user-interface";
+import { ICreateUser, UserRole } from "@/interface/user/create-user-interface";
 
 export class CreateUserModel {
   name: string;

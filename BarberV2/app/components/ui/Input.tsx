@@ -1,4 +1,4 @@
-import { InputProps } from "@/app/interfaces/inputInterface";
+import { InputProps } from "app/interfaces/inputInterface";
 
 export default function Input({
   name = "",

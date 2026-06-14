@@ -2,9 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "@/app/components/ui/Sidebar";
 import Button from "../components/ui/Button";
-import Loader from "@/app/components/ui/Loader";
 import { useAgendamentosAdmin } from "../hook/useAgendamentoAdmin";
 import {
   Agendamento,
@@ -17,6 +15,8 @@ import { AgendamentosGrid } from "../components/agendamento/AgendamentosGrid";
 import { AuthService } from "../api/services/authAdmin";
 import { ConfirmDialog } from "../components/ui/componenteConfirmação";
 import { Notification } from "../components/ui/componenteNotificacao";
+import Sidebar from "app/components/ui/Sidebar";
+import Loader from "app/components/ui/Loader";
 
 const authService = new AuthService();
 

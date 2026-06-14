@@ -1,6 +1,6 @@
 "use client";
 
-import { IProduto } from "@/app/interfaces/produtosInterface";
+import { IProduto } from "app/interfaces/produtosInterface";
 import { useState, useEffect, useRef } from "react";
 
 interface ProdutoItemProps {

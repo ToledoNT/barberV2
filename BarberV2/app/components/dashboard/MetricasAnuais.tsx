@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import MetricCard from "./MetricaCard";
-import { MetricasAnuaisProps } from "@/app/interfaces/dashboardInterface";
+import { MetricasAnuaisProps } from "app/interfaces/dashboardInterface";
 
 const MetricasAnuais = ({
   agendamentosAnuais = 0,

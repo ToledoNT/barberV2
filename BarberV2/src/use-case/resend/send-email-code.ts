@@ -1,6 +1,6 @@
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
+import { ResendEmailService } from "app/api/services/resendEmail";
 import { CreateLog } from "../logs/create-log";
-import { ResendEmailService } from "@/app/api/services/resendEmail";
 
 interface SendEmailRequest {
   to: string;

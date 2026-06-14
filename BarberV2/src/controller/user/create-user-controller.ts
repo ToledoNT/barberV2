@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { CreateUserModel } from "@/model/user/create-user-model";
+import { ICreateUser } from "@/interface/user/create-user-interface";
+import { CreateUser } from "@/use-case/user/create-use-case";
 
-import { ICreateUser } from "../../../../../KingsBarberShopBackend/src/interface/user/create-user-interface";
-import { CreateUser } from "@/src/use-case/user/create-use-case";
-import { CreateUserModel } from "@/src/model/user/create-user-model";
 
 export async function POST(req: NextRequest) {
   try {

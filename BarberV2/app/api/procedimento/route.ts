@@ -1,15 +1,12 @@
+import { CreateProcedimentoController } from "@/controller/procedimentos/create-procedimento-controller";
+import { DeleteProcedimentoController } from "@/controller/procedimentos/delete-procedimento-controller";
+import { GetAllProcedimentosController } from "@/controller/procedimentos/get-all-procedimento-controller";
+import { UpdateProcedimentoController } from "@/controller/procedimentos/update-procedimento-controller";
+import { UserRole } from "@/interface/user/create-user-interface";
+import { ProcedimentoMiddleware } from "@/middleware/procedimento-middleware";
+import { UserMiddleware } from "@/middleware/user-middleware";
+import { RouteHelper } from "app/helpers/auth-helper";
 import { NextRequest } from "next/server";
-
-import { GetAllProcedimentosController } from "@/src/controller/procedimentos/get-all-procedimento-controller";
-import { CreateProcedimentoController } from "@/src/controller/procedimentos/create-procedimento-controller";
-import { UpdateProcedimentoController } from "@/src/controller/procedimentos/update-procedimento-controller";
-import { DeleteProcedimentoController } from "@/src/controller/procedimentos/delete-procedimento-controller";
-
-
-import { UserRole } from "../../../../../KingsBarberShopBackend/src/interface/user/create-user-interface";
-import { RouteHelper } from "@/app/helpers/auth-helper";
-import { UserMiddleware } from "@/src/middleware/user-middleware";
-import { ProcedimentoMiddleware } from "@/src/middleware/procedimento-middleware";
 
 const userMiddleware = new UserMiddleware();
 const procedimentoMiddleware = new ProcedimentoMiddleware();

@@ -1,5 +1,5 @@
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
-import { PrismaFinanceiroRepository } from "../../db/prisma/respositories/prisma-financeiro-repository";
+import { PrismaFinanceiroRepository } from "@/db/prisma/respositories/prisma-financeiro-repository";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
 import { CreateLog } from "../logs/create-log";
 
 export class GetAllFinanceiroUseCase {

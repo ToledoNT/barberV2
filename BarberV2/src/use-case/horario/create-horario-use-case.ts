@@ -1,7 +1,8 @@
-import { ResponseTemplateInterface } from "@/app/interfaces/response-templete-interface";
-import { PrismaHorarioRepository } from "../../db/prisma/respositories/prisma-horario-repository";
+import { PrismaHorarioRepository } from "@/db/prisma/respositories/prisma-horario-repository";
+import { ICreateHorario } from "@/interface/horario/create-horario-interface";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
 import { CreateLog } from "../logs/create-log";
-import { ICreateHorario } from "@/app/interfaces/horario/create-horario-interface";
+
 
 export class CreateHorarioUseCase {
   async execute(horario: ICreateHorario): Promise<ResponseTemplateInterface> {

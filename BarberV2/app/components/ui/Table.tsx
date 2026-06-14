@@ -1,6 +1,7 @@
 "use client";
 
-import { TableProps, Column } from "@/app/interfaces/agendamentoInterface";
+import { Column, TableProps } from "app/interfaces/agendamentoInterface";
+
 
 export default function Table({ columns, data }: TableProps) {
   return (

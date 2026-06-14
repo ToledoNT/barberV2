@@ -3,10 +3,14 @@
 import React, { useState, useEffect } from "react";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
-import { ProfissionalFormProps } from "@/app/interfaces/profissionaisInterface";
-import { formatPhoneNumber } from "@/app/utils/validators";
+import { formatPhoneNumber } from "app/utils/validators";
+import { ProfissionalFormProps } from "app/interfaces/profissionaisInterface";
 
-const ProfissionalForm: React.FC<ProfissionalFormProps> = ({ profissional, onSave, onCancel }) => {
+const ProfissionalForm: React.FC<ProfissionalFormProps> = ({
+  profissional,
+  onSave,
+  onCancel,
+}) => {
   const [nome, setNome] = useState(profissional?.nome || "");
   const [email, setEmail] = useState(profissional?.email || "");
   const [telefone, setTelefone] = useState(profissional?.telefone || "");
@@ -21,17 +25,32 @@ const ProfissionalForm: React.FC<ProfissionalFormProps> = ({ profissional, onSav
 
   const handleSubmit = () => {
     if (!nome || !email || !telefone) return;
-    onSave({ id: profissional?.id, nome, email, telefone, procedimentos: profissional?.procedimentos || [] });
+
+    onSave({
+      id: profissional?.id,
+      nome,
+      email,
+      telefone,
+      procedimentos: profissional?.procedimentos || [],
+    });
+
     if (!profissional) {
-      setNome(""); 
-      setEmail(""); 
+      setNome("");
+      setEmail("");
       setTelefone("");
     }
   };
 
   const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedPhone = formatPhoneNumber(e.target.value);
-    setTelefone(formattedPhone);
+    setTelefone(formatPhoneNumber(e.target.value));
+  };
+
+  const handleNomeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNome(e.target.value);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
   };
 
   return (
@@ -46,7 +65,7 @@ const ProfissionalForm: React.FC<ProfissionalFormProps> = ({ profissional, onSav
             name="nome"
             placeholder="Digite o nome completo"
             value={nome}
-            onChange={e => setNome(e.target.value)}
+            onChange={handleNomeChange}
             className="w-full p-3 sm:p-4 rounded-xl bg-gray-900/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FFA500]/50 focus:border-[#FFA500] transition-all duration-300 text-sm sm:text-base backdrop-blur-sm"
           />
         </div>
@@ -60,7 +79,7 @@ const ProfissionalForm: React.FC<ProfissionalFormProps> = ({ profissional, onSav
             placeholder="Digite o email"
             type="email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={handleEmailChange}
             className="w-full p-3 sm:p-4 rounded-xl bg-gray-900/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FFA500]/50 focus:border-[#FFA500] transition-all duration-300 text-sm sm:text-base backdrop-blur-sm"
           />
         </div>
@@ -81,8 +100,8 @@ const ProfissionalForm: React.FC<ProfissionalFormProps> = ({ profissional, onSav
 
       {/* Botões de ação */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-gray-700">
-        <Button 
-          onClick={handleSubmit} 
+        <Button
+          onClick={handleSubmit}
           variant="primary"
           className="px-6 py-3 text-sm sm:text-base font-medium flex-1 sm:flex-none justify-center"
           disabled={!nome || !email || !telefone}
@@ -92,8 +111,8 @@ const ProfissionalForm: React.FC<ProfissionalFormProps> = ({ profissional, onSav
         </Button>
 
         {onCancel && (
-          <Button 
-            onClick={onCancel} 
+          <Button
+            onClick={onCancel}
             variant="secondary"
             className="px-6 py-3 text-sm sm:text-base font-medium flex-1 sm:flex-none justify-center"
           >

@@ -1,6 +1,6 @@
-import { PrismaProfessionalRepository } from "@/src/db/prisma/respositories/prisma-profissional-repository";
-import { GetHorariosByBarbeiroUseCase } from "@/src/use-case/horario/get-by-barbeiro-use-case";
-import { GetAllProfessionalsUseCase } from "@/src/use-case/profissional/get-all-profissional-use-case";
+import { PrismaProfessionalRepository } from "@/db/prisma/respositories/prisma-profissional-repository";
+import { GetHorariosByBarbeiroUseCase } from "@/use-case/horario/get-by-barbeiro-use-case";
+import { GetAllProfessionalsUseCase } from "@/use-case/profissional/get-all-profissional-use-case";
 
 export class GetProfessionalFullDataController {
   async handle(barbeiroId?: string) {

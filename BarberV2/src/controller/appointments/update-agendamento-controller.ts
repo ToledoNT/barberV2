@@ -3,10 +3,9 @@ import { UpdateAppointmentUseCase } from "../../use-case/agendamento/update-agen
 import { GetAppointmentByIdUseCase } from "../../use-case/agendamento/get-agendamento-by-id-use-case";
 import { UpdateRelatorioUseCase } from "../../use-case/relatorio/update-relatorio-use-case";
 import { CreateHorarioUseCase } from "../../use-case/horario/create-horario-use-case";
-import { ICreateHorario } from "@/app/interfaces/horario/create-horario-interface";
-import { StatusAgendamento } from "@/app/interfaces/agendamentos/create-agendamento-interface";
-import { CreateFinanceiroUseCase } from "@/src/use-case/financeiro/create-financeiro-use-case";
-
+import { ICreateHorario } from "@/interface/horario/create-horario-interface";
+import { CreateFinanceiroUseCase } from "@/use-case/financeiro/create-financeiro-use-case";
+import { StatusAgendamento } from "@/interface/agendamentos/create-agendamento-interface";
 
 export class UpdateAppointmentController {
   async handle(body: {
@@ -117,18 +116,13 @@ export class UpdateAppointmentController {
         const profissionalNome =
           agendamento.profissionalNome;
 
-        await new CreateFinanceiroUseCase().execute(
-          {
-            agendamentoId:
-              agendamento.id,
-            clienteNome,
-            valor,
-            status:
-              StatusAgendamento.PAGO,
-            profissionalId,
-            profissionalNome,
-          }
-        );
+  await new CreateFinanceiroUseCase().execute({
+  agendamentoId: agendamento.id,
+  clienteNome,
+  valor,
+  status: StatusAgendamento.PAGO,
+  profissionalNome,
+});
 
         await new UpdateRelatorioUseCase().execute(
           {

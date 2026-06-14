@@ -1,6 +1,5 @@
+import { DashboardResponse } from "app/interfaces/dashboardInterface";
 import axios from "axios";
-
-import { DashboardResponse } from "@/app/interfaces/dashboardInterface";
 
 export class DashboardService {
   private api = axios.create({

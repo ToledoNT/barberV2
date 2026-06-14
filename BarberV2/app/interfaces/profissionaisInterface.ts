@@ -41,12 +41,13 @@ export interface ProfissionalFormProps {
   onSave: (prof: Partial<Profissional>) => void;
   onCancel?: () => void;
 }
+
 export interface ProfissionalCardProps {
   profissional: Profissional;
   onSelect: (profissional: Profissional) => void;
   onEdit: (profissional: Profissional) => void;
-  onDelete: (id: string | undefined) => void;
-  isSelected?: boolean; 
+  onDelete: (id: string) => void;
+  isSelected?: boolean;
 }
 
 export interface Props extends ProfissionaisProps {

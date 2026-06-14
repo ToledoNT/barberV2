@@ -1,4 +1,4 @@
-import { StatusAgendamento } from "./create-agendamento-interface";
+import { StatusAgendamento } from "app/interfaces/agendamentoInterface";
 
 export interface IUpdateAppointment {
   id: string;              

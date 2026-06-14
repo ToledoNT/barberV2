@@ -1,9 +1,8 @@
 import { prisma } from "../prisma-connection";
-import { ICreateAppointment } from "../../../../../../KingsBarberShopBackend/src/interface/agendamentos/create-agendamento-interface";
-import { IUpdateAppointment } from "../../../../../../KingsBarberShopBackend/src/interface/agendamentos/update-agendamento-interface";
-import { ResponseTemplateInterface } from "../../../../../../KingsBarberShopBackend/src/interface/response-template-interface";
-import { ResponseTemplateModel } from "../../../../../../KingsBarberShopBackend/src/model/response-templete-model";
-
+import { ICreateAppointment } from "@/interface/agendamentos/create-agendamento-interface";
+import { IUpdateAppointment } from "@/interface/agendamentos/update-agendamento-interface";
+import { ResponseTemplateInterface } from "@/interface/response-template-interface";
+import { ResponseTemplateModel } from "@/model/response-templete-model";
 export class PrismaAppointmentRepository {
   async create(data: ICreateAppointment): Promise<ResponseTemplateInterface> {
     try {

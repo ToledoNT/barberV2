@@ -1,4 +1,4 @@
-import { GetAllProcedimentosUseCase } from "../../use-case/procedimento/get-all-procedimentos";
+import { GetAllProcedimentosUseCase } from "@/use-case/procedimento/get-all-procedimentos";
 
 export class GetAllProcedimentosController {
   async handle() {

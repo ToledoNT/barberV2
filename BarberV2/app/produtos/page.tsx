@@ -2,7 +2,6 @@
 
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import Sidebar from "@/app/components/ui/Sidebar";
 import { Notification } from "../components/ui/componenteNotificacao";
 import { ConfirmDialog } from "../components/ui/componenteConfirmação";
 import { useProdutos } from "../hook/useProdutosHook";
@@ -14,6 +13,7 @@ import { ListaProdutos } from "../components/produtos/listaProdutos";
 import { ProdutoModal } from "../components/produtos/produtoModal";
 import { ModalConfirmacaoStatus } from "../components/produtos/modalConfirmaçãoStatus";
 import { Loader } from "lucide-react";
+import Sidebar from "app/components/ui/Sidebar";
 
 // ---------- Interfaces ----------
 interface FiltrosState {
