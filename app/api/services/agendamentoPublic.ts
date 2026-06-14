@@ -1,7 +1,6 @@
-// services/AppointmentPublicService.ts
 import axios from "axios";
-import { Profissional } from "../../interfaces/profissionaisInterface";
 import { ResponseTemplateInterface } from "app/interfaces/response-templete-interface";
+import { Profissional } from "app/interfaces/profissionaisInterface";
 
 const api = axios.create({
   baseURL: "/api",

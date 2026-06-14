@@ -1,5 +1,5 @@
+import { LoginData, LoginResult } from "app/interfaces/loginInterface";
 import axios from "axios";
-import { LoginData, LoginResult } from "../../interfaces/loginInterface";
 
 const api = axios.create({
   baseURL: "/api",

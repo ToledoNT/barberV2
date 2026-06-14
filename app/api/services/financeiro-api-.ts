@@ -1,7 +1,7 @@
 import axios from "axios";
 
-import { ResponseTemplateInterface } from "../../interfaces/response-templete-interface";
 import { IFinanceiro } from "app/interfaces/financeiroInterface";
+import { ResponseTemplateInterface } from "app/interfaces/response-templete-interface";
 
 const api = axios.create({
   headers: {

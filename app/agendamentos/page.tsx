@@ -9,14 +9,15 @@ import {
   StatusAgendamento,
   HorarioDisponivel,
 } from "../interfaces/agendamentoInterface";
-import { AgendamentoHorario } from "../components/agendamento/AgendamentoHorario";
-import AgendamentoPrivadoForm from "../components/agendamento/AgendamentoPrivadoForm";
-import { AgendamentosGrid } from "../components/agendamento/AgendamentosGrid";
-import { AuthService } from "../api/services/authAdmin";
-import { ConfirmDialog } from "../components/ui/componenteConfirmação";
-import { Notification } from "../components/ui/componenteNotificacao";
-import Sidebar from "app/components/ui/Sidebar";
+
 import Loader from "app/components/ui/Loader";
+import Sidebar from "app/components/ui/Sidebar";
+import { AgendamentoHorario } from "app/components/agendamento/AgendamentoHorario";
+import { AuthService } from "app/api/services/authAdmin";
+import { Notification } from "app/components/ui/componenteNotificacao";
+import { ConfirmDialog } from "app/components/ui/componenteConfirmação";
+import AgendamentoPrivadoForm from "app/components/agendamento/AgendamentoPrivadoForm";
+import { AgendamentosGrid } from "app/components/agendamento/AgendamentosGrid";
 
 const authService = new AuthService();
 
