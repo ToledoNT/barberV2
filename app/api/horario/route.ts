@@ -21,20 +21,6 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
-    const cron = searchParams.get("cron");
-    const key = searchParams.get("key");
-
-    if (cron === "limpar") {
-      if (key !== process.env.CRON_SECRET) {
-        return RouteHelper.error("Não autorizado", 401);
-      }
-
-      const controller = new DeleteOldTimesController();
-      const response = await controller.handle();
-
-      return RouteHelper.success(response, response.code ?? 200);
-    }
-
     const auth = await RouteHelper.authAndRole(
       req,
       userMiddleware,
