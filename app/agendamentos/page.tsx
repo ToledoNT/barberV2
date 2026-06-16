@@ -713,27 +713,27 @@ export default function CriarAgendamentoPage() {
                   </div>
                   <div className="flex gap-2 w-full sm:w-auto">
                     <Button
-                      variant={tabs.agendamento === "gerenciar" ? "primary" : "secondary"}
-                      onClick={() => {
-                        setTabs({ ...tabs, agendamento: "gerenciar" });
-                        if (tabs.agendamento === "criar") setSelectedAgendamento(null);
-                      }}
-                      className="px-4 py-3 min-w-[140px] text-sm font-medium flex-1 sm:flex-none justify-center"
-                    >
-                      <span>👁️</span>
-                      <span>Ver Agendamentos</span>
-                    </Button>
+  variant={tabs.agendamento === "gerenciar" ? "primary" : "secondary"}
+  onClick={() => {
+    setTabs({ ...tabs, agendamento: "gerenciar" });
+    if (tabs.agendamento === "criar") setSelectedAgendamento(null);
+  }}
+  className="px-4 py-3 min-w-[140px] text-sm font-medium flex items-center justify-center gap-2 flex-1 sm:flex-none"
+>
+  <span className="flex-shrink-0 text-base leading-none">👁️</span>
+  <span className="leading-none">Ver Agendamentos</span>
+</Button>
                     <Button
-                      variant={tabs.agendamento === "criar" ? "primary" : "secondary"}
-                      onClick={() => {
-                        setTabs({ ...tabs, agendamento: "criar" });
-                        setSelectedAgendamento(null);
-                      }}
-                      className="px-4 py-3 min-w-[140px] text-sm font-medium flex-1 sm:flex-none justify-center"
-                    >
-                      <span>➕</span>
-                      <span>Criar Agendamento</span>
-                    </Button>
+  variant={tabs.agendamento === "criar" ? "primary" : "secondary"}
+  onClick={() => {
+    setTabs({ ...tabs, agendamento: "criar" });
+    setSelectedAgendamento(null);
+  }}
+  className="px-4 py-3 min-w-[140px] text-sm font-medium flex items-center justify-center gap-2 flex-1 sm:flex-none"
+>
+  <span className="flex-shrink-0 text-base leading-none">➕</span>
+  <span className="leading-none">Criar Agendamento</span>
+</Button>
                   </div>
                 </div>
 
