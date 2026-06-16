@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/limpar-horarios",
-      "schedule": "40 0 * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }

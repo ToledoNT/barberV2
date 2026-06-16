@@ -12,25 +12,21 @@ export class DeleteOldTimesController {
         return horariosResponse;
       }
 
-      const horarios =
-        horariosResponse.data || [];
+      const horarios = horariosResponse.data || [];
 
-      const hoje = new Date()
-        .toISOString()
-        .split("T")[0];
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
 
       let deletados = 0;
 
       for (const horario of horarios) {
         if (!horario.data) continue;
 
-        const dataHorario = String(horario.data).split("T")[0];
+        const dataHorario = new Date(horario.data);
 
         if (dataHorario < hoje) {
           const responseDelete =
-            await new DeleteHorarioUseCase().execute(
-              horario.id
-            );
+            await new DeleteHorarioUseCase().execute(horario.id);
 
           if (responseDelete.status) {
             deletados++;
