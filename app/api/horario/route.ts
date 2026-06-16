@@ -1,9 +1,11 @@
 import { CreateHorarioIndividualController } from "@/controller/horarios/create-individual-horario";
 import { DeleteHorarioController } from "@/controller/horarios/delete-horario-controller";
+import { DeleteOldTimesController } from "@/controller/horarios/delete-horario-cron";
 import { CreateHorarioController } from "@/controller/horarios/generate-horario-controller";
 import { GetAllHorariosController } from "@/controller/horarios/get-all-horarios-controller";
 import { GetHorariosByBarbeiroController } from "@/controller/horarios/get-by-barbeiros-controller";
 import { UpdateHorarioController } from "@/controller/horarios/update-horario-controller";
+
 import { UserRole } from "@/interface/user/create-user-interface";
 import { HorarioMiddleware } from "@/middleware/horario-middleware";
 import { UserMiddleware } from "@/middleware/user-middleware";
@@ -13,54 +15,52 @@ import { NextRequest } from "next/server";
 const userMiddleware = new UserMiddleware();
 const horarioMiddleware = new HorarioMiddleware();
 
-const allowedRoles: UserRole[] = [
-  "ADMIN",
-  "BARBEIRO",
-];
+const allowedRoles: UserRole[] = ["ADMIN", "BARBEIRO"];
 
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+
+    const cron = searchParams.get("cron");
+    const key = searchParams.get("key");
+
+    if (cron === "limpar") {
+      if (key !== process.env.CRON_SECRET) {
+        return RouteHelper.error("Não autorizado", 401);
+      }
+
+      const controller = new DeleteOldTimesController();
+      const response = await controller.handle();
+
+      return RouteHelper.success(response, response.code ?? 200);
+    }
+
     const auth = await RouteHelper.authAndRole(
       req,
       userMiddleware,
       allowedRoles
     );
 
-    if (!auth.ok) return auth.response;
-
-    const { searchParams } = new URL(req.url);
-
-    const barbeiro =
-      searchParams.get("barbeiro");
-
-    if (barbeiro) {
-      const controller =
-        new GetHorariosByBarbeiroController();
-
-      const response =
-        await controller.handle(barbeiro);
-
-      return RouteHelper.success(
-        response,
-        response.code ?? 200
-      );
+    if (!auth.ok) {
+      return auth.response;
     }
 
-    const controller =
-      new GetAllHorariosController();
+    const barbeiro = searchParams.get("barbeiro");
 
-    const response =
-      await controller.handle();
+    if (barbeiro) {
+      const controller = new GetHorariosByBarbeiroController();
+      const response = await controller.handle(barbeiro);
 
-    return RouteHelper.success(
-      response,
-      response.code ?? 200
-    );
-  } catch {
-    return RouteHelper.error(
-      "Erro interno",
-      500
-    );
+      return RouteHelper.success(response, response.code ?? 200);
+    }
+
+    const controller = new GetAllHorariosController();
+    const response = await controller.handle();
+
+    return RouteHelper.success(response, response.code ?? 200);
+  } catch (error) {
+    console.error(error);
+    return RouteHelper.error("Erro interno", 500);
   }
 }
 
@@ -77,58 +77,29 @@ export async function POST(req: NextRequest) {
     const body = await RouteHelper.getBody(req);
 
     if (!body) {
-      return RouteHelper.error(
-        "Body inválido",
-        400
-      );
+      return RouteHelper.error("Body inválido", 400);
     }
 
-    const validation =
-      horarioMiddleware.handleCreateHorario(
-        body
-      );
+    const validation = horarioMiddleware.handleCreateHorario(body);
 
     if (!validation.status) {
-      return RouteHelper.error(
-        validation.message,
-        validation.code
-      );
+      return RouteHelper.error(validation.message, validation.code);
     }
 
-    if (
-      body.data &&
-      body.inicio &&
-      body.fim
-    ) {
-      const controller =
-        new CreateHorarioIndividualController();
+    if (body.data && body.inicio && body.fim) {
+      const controller = new CreateHorarioIndividualController();
+      const response = await controller.handle(body);
 
-      const response =
-        await controller.handle(body);
-
-      return RouteHelper.success(
-        response,
-        response.code ?? 201
-      );
+      return RouteHelper.success(response, response.code ?? 201);
     }
 
-    const controller =
-      new CreateHorarioController();
+    const controller = new CreateHorarioController();
+    const response = await controller.handle(body);
 
-    const response =
-      await controller.handle(body);
-
-    return RouteHelper.success(
-      response,
-      response.code ?? 201
-    );
+    return RouteHelper.success(response, response.code ?? 201);
   } catch (error) {
     console.error(error);
-
-    return RouteHelper.error(
-      "Erro interno",
-      500
-    );
+    return RouteHelper.error("Erro interno", 500);
   }
 }
 
@@ -145,52 +116,34 @@ export async function PUT(req: NextRequest) {
     const body = await RouteHelper.getBody(req);
 
     if (!body) {
-      return RouteHelper.error(
-        "Body inválido",
-        400
-      );
+      return RouteHelper.error("Body inválido", 400);
     }
 
     const { id, ...data } = body;
 
     if (!id) {
-      return RouteHelper.error(
-        "ID é obrigatório",
-        400
-      );
+      return RouteHelper.error("ID é obrigatório", 400);
     }
 
-    const validation =
-      horarioMiddleware.handleUpdateHorario({
-        id,
-        ...data,
-      });
+    const validation = horarioMiddleware.handleUpdateHorario({
+      id,
+      ...data,
+    });
 
     if (!validation.status) {
-      return RouteHelper.error(
-        validation.message,
-        validation.code
-      );
+      return RouteHelper.error(validation.message, validation.code);
     }
 
-    const controller =
-      new UpdateHorarioController();
+    const controller = new UpdateHorarioController();
+    const response = await controller.handle({
+      id,
+      ...data,
+    });
 
-    const response =
-      await controller.handle({
-        id,
-        ...data,
-      });
-
-    return RouteHelper.success(
-      response,
-      response.code ?? 200
-    );
-  } catch {
-    return RouteHelper.error(
-      "Erro interno",
-      500
-    );
+    return RouteHelper.success(response, response.code ?? 200);
+  } catch (error) {
+    console.error(error);
+    return RouteHelper.error("Erro interno", 500);
   }
 }
 
@@ -209,40 +162,23 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get("id");
 
     if (!id) {
-      return RouteHelper.error(
-        "ID é obrigatório",
-        400
-      );
+      return RouteHelper.error("ID é obrigatório", 400);
     }
 
-    const validation =
-      horarioMiddleware.handleDeleteHorario({
-        id,
-      });
+    const validation = horarioMiddleware.handleDeleteHorario({
+      id,
+    });
 
     if (!validation.status) {
-      return RouteHelper.error(
-        validation.message,
-        validation.code
-      );
+      return RouteHelper.error(validation.message, validation.code);
     }
 
-    const controller =
-      new DeleteHorarioController();
+    const controller = new DeleteHorarioController();
+    const response = await controller.handle(id);
 
-    const response =
-      await controller.handle(id);
-
-    return RouteHelper.success(
-      response,
-      response.code ?? 200
-    );
+    return RouteHelper.success(response, response.code ?? 200);
   } catch (error) {
     console.error(error);
-
-    return RouteHelper.error(
-      "Erro interno",
-      500
-    );
+    return RouteHelper.error("Erro interno", 500);
   }
 }

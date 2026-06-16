@@ -111,4 +111,38 @@ export class PrismaHorarioRepository {
       return { status: false, code: 500, message: "Erro ao buscar horário por ID.", data: [], error: err.message };
     }
   }
+
+  async deleteManyOld(): Promise<ResponseTemplateInterface> {
+  try {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const result = await prisma.horarioDisponivel.deleteMany({
+      where: {
+        data: {
+          lt: hoje,
+        },
+      },
+    });
+
+    return {
+      status: true,
+      code: 200,
+      message: "Horários antigos removidos com sucesso.",
+      data: {
+        count: result.count,
+      },
+    };
+  } catch (err: any) {
+    console.error("Erro ao remover horários antigos:", err.message);
+
+    return {
+      status: false,
+      code: 500,
+      message: "Erro ao remover horários antigos.",
+      data: [],
+      error: err.message,
+    };
+  }
+}
 }

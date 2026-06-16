@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/horario?cron=limpar&key=ChaveSecreta",
+      "schedule": "40 0 * * *"
+    }
+  ]
+}
