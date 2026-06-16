@@ -1,7 +1,6 @@
 "use client";
 
 import { ButtonProps } from "app/interfaces/buttonInterface";
-import React from "react";
 
 export default function Button({
   children,

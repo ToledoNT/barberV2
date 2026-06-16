@@ -1,12 +1,5 @@
+import { NotificationProps } from "app/interfaces/agendamentos/create-agendamento-interface";
 import { useEffect, useState } from "react";
-
-interface NotificationProps {
-  isOpen: boolean;
-  message: string;
-  type?: "info" | "success" | "warning" | "error";
-  onClose: () => void;
-  duration?: number;
-}
 
 export const Notification: React.FC<NotificationProps> = ({
   isOpen,

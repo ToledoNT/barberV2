@@ -53,3 +53,24 @@ export interface ICreateEmailVerification {
   tipo: "normal" | "grupo"; 
   payload: any;
 }
+
+export interface ConfirmDialogProps {
+  isOpen: boolean;
+  title: string;
+  message: React.ReactNode;
+  type: "info" | "warning" | "error";
+  onConfirm: () => void;
+  onCancel: () => void;
+  position?: {
+    top: number;
+    left: number;
+  };
+}
+
+export interface NotificationProps {
+  isOpen: boolean;
+  message: string;
+  type?: "info" | "success" | "warning" | "error";
+  onClose: () => void;
+  duration?: number;
+}

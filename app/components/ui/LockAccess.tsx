@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { AuthService } from "app/api/services/authAdmin";
 
-// Serviço de autenticação
 const authService = new AuthService();
 
 interface CadeadoAcessoProps {

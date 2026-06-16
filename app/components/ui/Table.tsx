@@ -2,7 +2,6 @@
 
 import { Column, TableProps } from "app/interfaces/agendamentoInterface";
 
-
 export default function Table({ columns, data }: TableProps) {
   return (
     <div className="overflow-x-auto rounded-lg border border-[#333]">

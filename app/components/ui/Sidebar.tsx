@@ -19,7 +19,6 @@ const menuItems: MenuItem[] = [
   { name: "Financeiro", icon: DollarSign, path: "/financeiro", adminOnly: true },
   { name: "Profissionais", icon: Users, path: "/profissionais" },
 
-  // ⭐ ITEM NOVO — Produtos (livre, qualquer usuário acessa)
   { name: "Produtos", icon: Package, path: "/produtos" },
 ];
 

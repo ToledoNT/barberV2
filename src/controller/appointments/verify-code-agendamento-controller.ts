@@ -230,7 +230,6 @@ export class VerificarCodigoController {
     const horario = p.horario;
 
     const created = await criarAgendamento.execute({
-      // 🔥 CORREÇÃO PRINCIPAL
       nome: p.pessoaNome ?? "Sem nome",
 
       telefone: payload.cliente.telefone ?? "",

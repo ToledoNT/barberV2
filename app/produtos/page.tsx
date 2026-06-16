@@ -1,70 +1,72 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { Notification } from "../components/ui/componenteNotificacao";
-import { ConfirmDialog } from "../components/ui/componenteConfirmação";
-import { useProdutos } from "../hook/useProdutosHook";
-import { IProduto } from "../interfaces/produtosInterface";
-import { Header } from "../components/produtos/headerProdutos";
-import { ResumoCards } from "../components/produtos/resumoCards";
-import { FiltrosSection } from "../components/produtos/filtrosSection";
-import { ListaProdutos } from "../components/produtos/listaProdutos";
-import { ProdutoModal } from "../components/produtos/produtoModal";
-import { ModalConfirmacaoStatus } from "../components/produtos/modalConfirmaçãoStatus";
-import { Loader } from "lucide-react";
+import Button from "../components/ui/Button";
+import Loader from "app/components/ui/Loader";
 import Sidebar from "app/components/ui/Sidebar";
+import { Notification } from "app/components/ui/componenteNotificacao";
+import { ConfirmDialog } from "app/components/ui/componenteConfirmação";
+import { AuthService } from "app/api/services/authAdmin";
+import { useProdutos } from "app/hook/useProdutosHook";
+import { IProduto } from "app/interfaces/produtosInterface";
+import { ResumoCards } from "app/components/produtos/resumoCards";
+import { FiltrosSection } from "app/components/produtos/filtrosSection";
+import { ListaProdutos } from "app/components/produtos/listaProdutos";
+import { ProdutoModal } from "app/components/produtos/produtoModal";
+import { ModalConfirmacaoStatus } from "app/components/produtos/modalConfirmaçãoStatus";
 
-// ---------- Interfaces ----------
+const authService = new AuthService();
+
 interface FiltrosState {
   busca: string;
   categoria: string;
   ordenacao: "nome" | "preco" | "estoque";
 }
 
-// ---------- Hook personalizado para gerenciar produtos ----------
-const useProdutosState = () => {
-  const { 
-    produtos, 
-    loading, 
-    error, 
-    addProduto, 
-    updateProduto, 
-    removeProduto, 
-    fetchProdutos 
+export default function ProdutosPage() {
+  const router = useRouter();
+
+  // ---------- Autenticação ----------
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loadingAuth, setLoadingAuth] = useState(true);
+
+  // ---------- Estado dos produtos ----------
+  const {
+    produtos,
+    loading: loadingProdutos,
+    error,
+    addProduto,
+    updateProduto,
+    removeProduto,
+    fetchProdutos,
   } = useProdutos();
 
+  // ---------- UI states ----------
+  const [collapsed, setCollapsed] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false); // loader overlay
   const [filtros, setFiltros] = useState<FiltrosState>({
     busca: "",
     categoria: "todos",
     ordenacao: "nome",
   });
 
-  const [collapsed, setCollapsed] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [loadingAuth, setLoadingAuth] = useState(false);
+  // ---------- Modais ----------
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editing, setEditing] = useState<IProduto | null>(null);
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    produto: IProduto | null;
+    novoStatus: IProduto["status"];
+    usuarioPendente: string;
+  }>({
+    isOpen: false,
+    produto: null,
+    novoStatus: "disponivel",
+    usuarioPendente: "",
+  });
 
-  return {
-    produtos,
-    loading,
-    error,
-    addProduto,
-    updateProduto,
-    removeProduto,
-    fetchProdutos,
-    filtros,
-    setFiltros,
-    collapsed,
-    setCollapsed,
-    isAuthenticated,
-    setIsAuthenticated,
-    loadingAuth,
-    setLoadingAuth
-  };
-};
-
-// ---------- Hook de notificações e confirmações ----------
-const useNotificationSystem = () => {
+  // ---------- Notificações e confirmações ----------
   const [notification, setNotification] = useState<{
     isOpen: boolean;
     message: string;
@@ -78,6 +80,8 @@ const useNotificationSystem = () => {
     type: "info" | "warning" | "error";
     onConfirm: (() => void) | null;
     onCancel?: () => void;
+    position?: { top: number; left: number };
+    color?: { bg: string; text: string };
   }>({
     isOpen: false,
     title: "",
@@ -95,7 +99,8 @@ const useNotificationSystem = () => {
     message: string,
     onConfirm: () => void,
     type: "info" | "warning" | "error" = "info",
-    onCancel?: () => void
+    onCancel?: () => void,
+    position?: { top: number; left: number }
   ) => {
     setConfirmDialog({
       isOpen: true,
@@ -104,6 +109,7 @@ const useNotificationSystem = () => {
       type,
       onConfirm,
       onCancel: onCancel || (() => setConfirmDialog(prev => ({ ...prev, isOpen: false }))),
+      position,
     });
   };
 
@@ -114,74 +120,22 @@ const useNotificationSystem = () => {
     closeConfirmDialog();
   };
 
-  return { notification, confirmDialog, notify, confirm, closeNotification, closeConfirmDialog, handleConfirm };
-};
-
-// ---------- Hook de modais ----------
-const useModalSystem = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editing, setEditing] = useState<IProduto | null>(null);
-  const [statusModal, setStatusModal] = useState<{
-    isOpen: boolean;
-    produto: IProduto | null;
-    novoStatus: IProduto["status"];
-    usuarioPendente: string;
-  }>({
-    isOpen: false,
-    produto: null,
-    novoStatus: "disponivel",
-    usuarioPendente: ""
-  });
-
-  const openProdutoModal = (produto?: IProduto) => {
-    setEditing(produto || null);
-    setIsModalOpen(true);
-  };
-  const closeProdutoModal = () => {
-    setIsModalOpen(false);
-    setEditing(null);
-  };
-
-  const openStatusModal = (produto: IProduto, novoStatus?: IProduto["status"]) => {
-    setStatusModal({
-      isOpen: true,
-      produto,
-      novoStatus: novoStatus || produto.status,
-      usuarioPendente: produto.usuarioPendente || ""
-    });
-  };
-  const closeStatusModal = () => {
-    setStatusModal({ isOpen: false, produto: null, novoStatus: "disponivel", usuarioPendente: "" });
-  };
-
-  return { isModalOpen, editing, statusModal, openProdutoModal, closeProdutoModal, openStatusModal, closeStatusModal, setStatusModal };
-};
-
-// ---------- Componente Principal ----------
-export default function ProdutosPage() {
-  const router = useRouter();
-
-  const produtosState = useProdutosState();
-  const notificationSystem = useNotificationSystem();
-  const modalSystem = useModalSystem();
-
-  const {
-    produtos, loading, error, addProduto, updateProduto, removeProduto, fetchProdutos,
-    filtros, setFiltros, collapsed, setCollapsed, isAuthenticated, loadingAuth
-  } = produtosState;
-
-  const {
-    notification, confirmDialog, notify, confirm, closeNotification, closeConfirmDialog, handleConfirm
-  } = notificationSystem;
-
-  const {
-    isModalOpen, editing, statusModal, openProdutoModal, closeProdutoModal, openStatusModal, closeStatusModal, setStatusModal
-  } = modalSystem;
-
-  // ---------- Funções de filtro ----------
-  const atualizarFiltro = (campo: keyof FiltrosState, valor: string) =>
-    setFiltros(prev => ({ ...prev, [campo]: valor }));
-  const limparFiltros = () => setFiltros({ busca: "", categoria: "todos", ordenacao: "nome" });
+  // ---------- Verificação de autenticação (igual ao agendamento) ----------
+  useEffect(() => {
+    const verifyAuth = async () => {
+      setLoadingAuth(true);
+      try {
+        const valid = await authService.verifyToken();
+        if (!valid) router.replace("/login");
+        else setIsAuthenticated(true);
+      } catch {
+        router.replace("/login");
+      } finally {
+        setLoadingAuth(false);
+      }
+    };
+    verifyAuth();
+  }, [router]);
 
   // ---------- Categorias disponíveis ----------
   const categoriasDisponiveis = useMemo(() => {
@@ -211,7 +165,7 @@ export default function ProdutosPage() {
     });
   }, [produtos, filtros]);
 
-  // ---------- Totais ----------
+  // ---------- Totais para os cards ----------
   const totais = useMemo(() => {
     const totalValor = produtos.reduce((acc, p) => acc + (p.preco || 0), 0);
     const totalItens = produtos.reduce((acc, p) => acc + (p.estoque || 0), 0);
@@ -220,11 +174,16 @@ export default function ProdutosPage() {
 
   // ---------- Handlers ----------
   const handleAtualizarLista = async () => {
-    try { await fetchProdutos(); notify("Lista de produtos atualizada", "success"); }
-    catch { notify("Erro ao atualizar lista", "error"); }
+    try {
+      await fetchProdutos();
+      notify("Lista de produtos atualizada", "success");
+    } catch {
+      notify("Erro ao atualizar lista", "error");
+    }
   };
 
   const handleSalvarProduto = async (payload: Partial<IProduto>) => {
+    setIsProcessing(true);
     try {
       const preco = payload.preco ? Number(String(payload.preco).replace(",", ".")) : 0;
       const estoque = Number(payload.estoque) || 0;
@@ -241,7 +200,7 @@ export default function ProdutosPage() {
         status: payload.status ?? (editing ? editing.status : "disponivel"),
         usuarioPendente: payload.status === "pendente"
           ? payload.usuarioPendente?.trim() || ""
-          : ""
+          : "",
       };
 
       if (editing) {
@@ -252,37 +211,49 @@ export default function ProdutosPage() {
         notify("Produto criado com sucesso", "success");
       }
 
-      setTimeout(() => fetchProdutos(), 500);
-      closeProdutoModal();
-
+      setIsModalOpen(false);
+      setEditing(null);
     } catch (err: any) {
       notify(err?.message || "Erro ao salvar produto", "error");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const handleExcluir = async (id: string) => {
+  const handleExcluir = async (id: string, event?: React.MouseEvent) => {
     const produto = produtos.find(p => p.id === id);
     if (!produto) return;
 
-    // 🔥 NOVO — bloqueia exclusão se estiver pendente
     if (produto.status === "pendente") {
       notify("Só é possível excluir quando o produto estiver pago.", "warning");
       return;
+    }
+
+    // Captura posição para o confirm dialog (opcional)
+    let position;
+    if (event) {
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      position = { top: rect.top + window.scrollY, left: rect.left + rect.width / 2 };
     }
 
     confirm(
       "Excluir Produto",
       `Tem certeza que deseja excluir o produto "${produto.nome}"?`,
       async () => {
+        setIsProcessing(true);
         try {
           await removeProduto(id);
           notify("Produto deletado", "success");
-          setTimeout(() => fetchProdutos(), 500);
+          await fetchProdutos();
         } catch {
           notify("Erro ao deletar produto", "error");
+        } finally {
+          setIsProcessing(false);
         }
       },
-      "error"
+      "error",
+      undefined,
+      position
     );
   };
 
@@ -290,23 +261,45 @@ export default function ProdutosPage() {
     const { produto, novoStatus, usuarioPendente } = statusModal;
     if (!produto) return;
 
+    setIsProcessing(true);
     try {
-      const dadosAtualizacao = {
+      const dadosAtualizacao: Partial<IProduto> = {
         ...produto,
         status: novoStatus,
-        usuarioPendente: novoStatus === "pendente" ? usuarioPendente?.trim() || "" : ""
+        usuarioPendente: novoStatus === "pendente" ? usuarioPendente?.trim() || "" : "",
       };
-
       await updateProduto(produto.id, dadosAtualizacao);
       notify(`Status atualizado para ${novoStatus}`, "success");
-      setTimeout(() => fetchProdutos(), 500);
       closeStatusModal();
-
-    } catch { notify("Erro ao atualizar status", "error"); }
+    } catch (err) {
+      console.error(err);
+      notify("Erro ao atualizar status", "error");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleUsuarioPendenteChange = (usuario: string) => {
-    setStatusModal(prev => ({ ...prev, usuarioPendente: usuario }));
+  const openProdutoModal = (produto?: IProduto) => {
+    setEditing(produto || null);
+    setIsModalOpen(true);
+  };
+
+  const closeProdutoModal = () => {
+    setIsModalOpen(false);
+    setEditing(null);
+  };
+
+  const openStatusModal = (produto: IProduto, novoStatus?: IProduto["status"]) => {
+    setStatusModal({
+      isOpen: true,
+      produto,
+      novoStatus: novoStatus || produto.status,
+      usuarioPendente: produto.usuarioPendente || "",
+    });
+  };
+
+  const closeStatusModal = () => {
+    setStatusModal({ isOpen: false, produto: null, novoStatus: "disponivel", usuarioPendente: "" });
   };
 
   const getStatusColor = (status: string | undefined) => {
@@ -320,12 +313,17 @@ export default function ProdutosPage() {
     }
   };
 
-  // ---------- Ajuste do mostrarAlerta ----------
   const mostrarAlerta = (mensagem: string, callback: () => void) => {
     confirm("Alterar Status", mensagem, callback, "info");
   };
 
-  if (loadingAuth || loading) return <Loader />;
+  const atualizarFiltro = (campo: keyof FiltrosState, valor: string) =>
+    setFiltros(prev => ({ ...prev, [campo]: valor }));
+
+  const limparFiltros = () => setFiltros({ busca: "", categoria: "todos", ordenacao: "nome" });
+
+  if (loadingAuth || loadingProdutos) return <Loader fullScreen />;
+  if (!isAuthenticated) return null;
 
   return (
     <>
@@ -352,19 +350,48 @@ export default function ProdutosPage() {
 
         <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
           <main className="flex-1 flex flex-col p-3 sm:p-4 lg:p-6 overflow-hidden">
-            <Header
-              produtosCount={produtos.length}
-              buscaValue={filtros.busca}
-              onBuscaChange={(valor) => atualizarFiltro("busca", valor)}
-              onNovoProduto={() => openProdutoModal()}
-              onAtualizarLista={handleAtualizarLista}
-            />
+            {/* Cabeçalho com botões padronizados */}
+            <div className="mb-6 sm:mb-8 flex-shrink-0">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-[#FFA500] mb-1 flex items-center gap-2 sm:gap-3">
+                      <span className="text-3xl sm:text-4xl">📦</span>
+                      <span className="truncate">Produtos</span>
+                    </h1>
+                    <p className="text-gray-400 text-sm sm:text-base truncate">
+                      Gerencie seu catálogo de produtos
+                    </p>
+                  </div>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <Button
+                      variant="secondary"
+                      onClick={handleAtualizarLista}
+                      className="px-4 py-2 text-sm"
+                    >
+                      🔄 Atualizar
+                    </Button>
+                    <Button
+                      variant="primary"
+                      onClick={() => openProdutoModal()}
+                      className="px-4 py-2 text-sm"
+                    >
+                      ➕ Novo Produto
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div className="flex-1 flex flex-col min-h-0 gap-6">
+              {/* Cards de resumo */}
+              <ResumoCards
+                totalProdutos={totais.quantidade}
+                totalValor={totais.totalValor}
+                totalItens={totais.totalItens}
+              />
 
-              {/* FIX AQUI — ResumoCards NÃO recebe props */}
-              <ResumoCards /> {/* <-- FIX */}
-
+              {/* Seção de filtros (estilo agendamento) */}
               <FiltrosSection
                 filtros={filtros}
                 categoriasDisponiveis={categoriasDisponiveis}
@@ -374,6 +401,7 @@ export default function ProdutosPage() {
                 onLimparFiltros={limparFiltros}
               />
 
+              {/* Lista de produtos com cards padronizados */}
               <ListaProdutos
                 produtos={produtosFiltrados}
                 produtosTotal={produtos.length}
@@ -384,34 +412,65 @@ export default function ProdutosPage() {
                 getStatusColor={getStatusColor}
                 onLimparFiltros={limparFiltros}
                 filtrosAtivos={!!(filtros.busca || filtros.categoria !== "todos")}
-                mostrarAlerta={mostrarAlerta} // ✅ passa para lista
+                mostrarAlerta={mostrarAlerta}
               />
-
             </div>
           </main>
         </div>
-
-        {isModalOpen && (
-          <ProdutoModal
-            key={editing ? `edit-${editing.id}` : 'create'}
-            initial={editing ?? undefined}
-            onClose={closeProdutoModal}
-            onSave={handleSalvarProduto}
-            categoriasSugeridas={categoriasDisponiveis}
-          />
-        )}
-
-        {statusModal.isOpen && (
-          <ModalConfirmacaoStatus
-            produto={statusModal.produto}
-            novoStatus={statusModal.novoStatus}
-            usuarioPendente={statusModal.usuarioPendente}
-            onUsuarioPendenteChange={handleUsuarioPendenteChange}
-            onConfirm={handleConfirmarStatus}
-            onCancel={closeStatusModal}
-          />
-        )}
       </div>
+
+      {/* Modal de produto (estilo agendamento) */}
+      {isModalOpen && (
+        <ProdutoModal
+          initial={editing ?? undefined}
+          onClose={closeProdutoModal}
+          onSave={handleSalvarProduto}
+          categoriasSugeridas={categoriasDisponiveis}
+        />
+      )}
+
+      {/* Modal de confirmação de status */}
+      {statusModal.isOpen && (
+        <ModalConfirmacaoStatus
+          produto={statusModal.produto}
+          novoStatus={statusModal.novoStatus}
+          usuarioPendente={statusModal.usuarioPendente}
+          onUsuarioPendenteChange={(usuario) =>
+            setStatusModal(prev => ({ ...prev, usuarioPendente: usuario }))
+          }
+          onConfirm={handleConfirmarStatus}
+          onCancel={closeStatusModal}
+        />
+      )}
+
+      {/* Loader overlay para operações longas */}
+      {isProcessing && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <Loader size={60} color="#FFA500" />
+        </div>
+      )}
+
+      {/* Scrollbar customizada (igual ao agendamento) */}
+      <style jsx global>{`
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 6px;
+        }
+        .scrollbar-thumb-gray-600::-webkit-scrollbar-thumb {
+          background-color: #4B5563;
+          border-radius: 10px;
+        }
+        .scrollbar-track-gray-800::-webkit-scrollbar-track {
+          background-color: #1F2937;
+          border-radius: 10px;
+        }
+        .scrollbar-thumb-gray-500::-webkit-scrollbar-thumb:hover {
+          background-color: #6B7280;
+        }
+        .scrollbar-thin {
+          scrollbar-width: thin;
+          scrollbar-color: #4B5563 #1F2937;
+        }
+      `}</style>
     </>
   );
 }

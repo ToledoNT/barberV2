@@ -5,3 +5,8 @@ export interface ICreateHorario {
   fim: string;            
   disponivel?: boolean;   
 }
+
+export interface HorarioInputProps {
+  value: string;
+  onChange: (value: string) => void;
+}

@@ -1,12 +1,8 @@
 "use client";
 
+import { HorarioInputProps } from "app/interfaces/horario/create-horario-interface";
 import React from "react";
 import TimePicker from "react-time-picker";
-
-interface HorarioInputProps {
-  value: string;
-  onChange: (value: string) => void;
-}
 
 export default function HorarioInput({ value, onChange }: HorarioInputProps) {
   return (

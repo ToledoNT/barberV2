@@ -1,119 +1,205 @@
+import { ProductService } from "app/api/services/produtosApi";
+import { IProduto } from "app/interfaces/produtosInterface";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { ProductService } from "../api/services/produtosApi";
-import { IProduto } from "../interfaces/produtosInterface";
 
 const produtoService = new ProductService();
 
 export function useProdutos() {
   const [produtos, setProdutos] = useState<IProduto[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
   const mounted = useRef(true);
 
-const fetchProdutos = useCallback(async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const data = await produtoService.fetchProdutos(); // data já tem o status correto do backend
+  const fetchProdutos = useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-    if (mounted.current) {
-      setProdutos(
-        data.map((p: IProduto) => ({
-          ...p,
-        }))
-      );
+    try {
+      const data = await produtoService.fetchProdutos();
+
+      if (mounted.current) {
+        setProdutos(data);
+      }
+    } catch (err: any) {
+      console.error(err);
+
+      if (mounted.current) {
+        setError(err.message || "Erro ao carregar produtos");
+      }
+    } finally {
+      if (mounted.current) {
+        setLoading(false);
+      }
     }
-  } catch (err: any) {
-    console.error(err);
-    if (mounted.current) setError(err.message || "Erro ao carregar produtos");
-  } finally {
-    if (mounted.current) setLoading(false);
-  }
-}, []);
-
+  }, []);
 
   useEffect(() => {
     mounted.current = true;
+
     fetchProdutos();
-    return () => { mounted.current = false; };
+
+    return () => {
+      mounted.current = false;
+    };
   }, [fetchProdutos]);
 
-  const addProduto = useCallback(async (p: Omit<IProduto, "id">) => {
-    setLoading(true);
+  const addProduto = useCallback(
+  async (produto: Omit<IProduto, "id">) => {
     setError(null);
-    try {
-      const preco = p.preco ?? 0;
-      const estoque = p.estoque ?? 0;
-      if (preco <= 0) throw new Error("O preço deve ser maior que zero");
-      if (estoque <= 0) throw new Error("O estoque deve ser maior que zero");
 
-      const novo = await produtoService.createProduto(p);
-      if (mounted.current) setProdutos((prev) => [...prev, novo]);
-      return novo;
+    try {
+      const preco = produto.preco ?? 0;
+      const estoque = produto.estoque ?? 0;
+
+      if (preco <= 0) {
+        throw new Error("O preço deve ser maior que zero");
+      }
+
+      if (estoque <= 0) {
+        throw new Error("O estoque deve ser maior que zero");
+      }
+
+      await produtoService.createProduto(produto);
+
+      await fetchProdutos();
+
+      return true;
     } catch (err: any) {
       console.error(err);
-      if (mounted.current) setError(err.message || "Erro ao adicionar produto");
-      throw err;
-    } finally { if (mounted.current) setLoading(false); }
-  }, []);
 
-  const updateProduto = useCallback(async (id: string, p: Partial<Omit<IProduto, "id">>) => {
-    setLoading(true);
-    setError(null);
-    try {
-      if (p.preco !== undefined && (p.preco ?? 0) <= 0)
-        throw new Error("O preço deve ser maior que zero");
-      if (p.estoque !== undefined && (p.estoque ?? 0) <= 0)
-        throw new Error("O estoque deve ser maior que zero");
-
-      const atualizado = await produtoService.updateProduto(id, p);
-      if (atualizado && mounted.current) {
-        setProdutos((prev) => prev.map((item) => item.id === id ? atualizado : item));
+      if (mounted.current) {
+        setError(err.message || "Erro ao adicionar produto");
       }
+
+      throw err;
+    }
+  },
+  [fetchProdutos]
+); 
+
+ const updateProduto = useCallback(
+  async (
+    id: string,
+    produto: Partial<Omit<IProduto, "id">>
+  ) => {
+    setError(null);
+
+    try {
+      if (
+        produto.preco !== undefined &&
+        (produto.preco ?? 0) <= 0
+      ) {
+        throw new Error("O preço deve ser maior que zero");
+      }
+
+      if (
+        produto.estoque !== undefined &&
+        (produto.estoque ?? 0) <= 0
+      ) {
+        throw new Error("O estoque deve ser maior que zero");
+      }
+
+      const atualizado = await produtoService.updateProduto(
+        id,
+        produto
+      );
+
+      if (mounted.current) {
+        setProdutos((prev) =>
+          prev.map((item) => {
+            if (item.id !== id) return item;
+
+            return {
+              ...item,
+              ...produto,
+              ...(atualizado || {}),
+            };
+          })
+        );
+      }
+
       return atualizado;
     } catch (err: any) {
       console.error(err);
-      if (mounted.current) setError(err.message || "Erro ao atualizar produto");
+
+      if (mounted.current) {
+        setError(
+          err.message || "Erro ao atualizar produto"
+        );
+      }
+
       throw err;
-    } finally { if (mounted.current) setLoading(false); }
-  }, []);
+    }
+  },
+  []
+);
 
-  const updateStatusProduto = useCallback(async (produto: IProduto, novoStatus: IProduto["status"]) => {
-  if (produto.status === "vendido") return; 
+  const updateStatusProduto = useCallback(
+    async (
+      produto: IProduto,
+      novoStatus: IProduto["status"]
+    ) => {
+      if (produto.status === "vendido") return;
 
-  const dadosParaEnvio: Partial<IProduto> = {
-    ...produto,
-    status: novoStatus, 
-    usuarioPendente: novoStatus === "pendente" ? produto.usuarioPendente || "" : ""
-  };
+      const dadosAtualizacao: Partial<IProduto> = {
+        ...produto,
+        status: novoStatus,
+        usuarioPendente:
+          novoStatus === "pendente"
+            ? produto.usuarioPendente || ""
+            : "",
+      };
 
-  const atualizado = await updateProduto(produto.id, dadosParaEnvio);
-  if (atualizado && mounted.current) {
-    setProdutos((prev) => prev.map(p => p.id === produto.id ? atualizado : p));
-  }
-}, [updateProduto]);
+      const atualizado = await updateProduto(
+        produto.id,
+        dadosAtualizacao
+      );
 
-  const removeProduto = useCallback(async (id: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await produtoService.deleteProduto(id);
-      if (mounted.current) setProdutos((prev) => prev.filter((item) => item.id !== id));
-    } catch (err: any) {
-      console.error(err);
-      if (mounted.current) setError(err.message || "Erro ao remover produto");
-      throw err;
-    } finally { if (mounted.current) setLoading(false); }
-  }, []);
+      if (atualizado && mounted.current) {
+        setProdutos((prev) =>
+          prev.map((item) =>
+            item.id === produto.id ? atualizado : item
+          )
+        );
+      }
+    },
+    [updateProduto]
+  );
+
+  const removeProduto = useCallback(
+    async (id: string) => {
+      setError(null);
+
+      try {
+        await produtoService.deleteProduto(id);
+
+        if (mounted.current) {
+          setProdutos((prev) =>
+            prev.filter((item) => item.id !== id)
+          );
+        }
+      } catch (err: any) {
+        console.error(err);
+
+        if (mounted.current) {
+          setError(err.message || "Erro ao remover produto");
+        }
+
+        throw err;
+      }
+    },
+    []
+  );
 
   return {
     produtos,
-    addProduto,
-    updateProduto,
-    removeProduto,
-    fetchProdutos,
-    updateStatusProduto,
     loading,
     error,
+    fetchProdutos,
+    addProduto,
+    updateProduto,
+    updateStatusProduto,
+    removeProduto,
   };
 }
