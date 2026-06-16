@@ -385,11 +385,7 @@ export default function ProdutosPage() {
 
             <div className="flex-1 flex flex-col min-h-0 gap-6">
               {/* Cards de resumo */}
-              <ResumoCards
-                totalProdutos={totais.quantidade}
-                totalValor={totais.totalValor}
-                totalItens={totais.totalItens}
-              />
+            <ResumoCards />
 
               {/* Seção de filtros (estilo agendamento) */}
               <FiltrosSection
