@@ -4,9 +4,7 @@ import { GetAllHorariosUseCase } from "@/use-case/horario/get-all-horario-use-ca
 
 export class DeleteOldTimesController {
   async handle(): Promise<ResponseTemplateInterface> {
-    try {
-      const horariosResponse =
-        await new GetAllHorariosUseCase().execute();
+    try {      const horariosResponse = await new GetAllHorariosUseCase().execute();
 
       if (!horariosResponse.status) {
         return horariosResponse;
@@ -14,22 +12,21 @@ export class DeleteOldTimesController {
 
       const horarios = horariosResponse.data || [];
 
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
+      const hoje = new Date().toISOString().slice(0, 10);
 
       let deletados = 0;
 
       for (const horario of horarios) {
         if (!horario.data) continue;
 
-        const dataHorario = new Date(horario.data);
-
-        if (dataHorario < hoje) {
-          const responseDelete =
-            await new DeleteHorarioUseCase().execute(horario.id);
+       
+        if (horario.data < hoje) {
+          const responseDelete = await new DeleteHorarioUseCase().execute(
+            horario.id
+          );
 
           if (responseDelete.status) {
-            deletados++;
+            deletados++;            console.log(`✅ Horário ${horario.id} deletado`);
           }
         }
       }

@@ -63,119 +63,175 @@ export class VerificarCodigoController {
     }
   }
 
-  private async processarUnico(payload: any) {
-    const profissionalId =
-      typeof payload.profissional === "string"
-        ? payload.profissional
-        : payload.profissional?.id;
+private async processarUnico(payload: any) {
+  const profissionalId =
+    typeof payload.profissional === "string"
+      ? payload.profissional
+      : payload.profissional?.id;
 
-    const servicoId =
-      typeof payload.servico === "string"
-        ? payload.servico
-        : payload.servico?.id;
+  const servicoId =
+    typeof payload.servico === "string"
+      ? payload.servico
+      : payload.servico?.id;
 
-    const horarioId =
-      typeof payload.horario === "string"
-        ? payload.horario
-        : payload.horario?.id;
+  const horarioId =
+    typeof payload.horario === "string"
+      ? payload.horario
+      : payload.horario?.id;
 
-    if (!payload.cliente?.nome || !payload.cliente?.email) {
-      return {
-        status: false,
-        code: 400,
-        message: "Cliente inválido no payload",
-        data: [],
-      };
-    }
+  if (!horarioId) {
+    return {
+      status: false,
+      code: 400,
+      message: "Horário não informado",
+      data: [],
+    };
+  }
 
-    const horarioResponse =
-      await new GetHorarioByIdUseCase().execute(horarioId);
+  if (!payload.cliente?.nome || !payload.cliente?.email) {
+    return {
+      status: false,
+      code: 400,
+      message: "Cliente inválido no payload",
+      data: [],
+    };
+  }
 
-    if (
-      !horarioResponse?.status ||
-      !horarioResponse.data?.data
-    ) {
-      return {
-        status: false,
-        code: 409,
-        message:
-          "Esse horário não está mais disponível. Atualize a página e selecione outro horário.",
-        data: [],
-      };
-    }
+  const horarioResponse =
+    await new GetHorarioByIdUseCase().execute(horarioId);
 
-    const horario = horarioResponse.data.data;
+  if (
+    !horarioResponse?.status ||
+    !horarioResponse.data?.data
+  ) {
+    return {
+      status: false,
+      code: 409,
+      message:
+        "Esse horário não está mais disponível. Atualize a página e selecione outro horário.",
+      data: [],
+    };
+  }
 
-    if (!horario?.data || !horario?.inicio || !horario?.fim) {
-      return {
-        status: false,
-        code: 409,
-        message:
-          "Horário inválido ou expirado. Atualize a página e tente novamente.",
-        data: [],
-      };
-    }
+  const horario = horarioResponse.data.data;
 
-    const created =
-      await new CreateAppointmentUseCase().execute({
-        nome: payload.cliente.nome,
-        telefone: payload.cliente.telefone ?? "",
-        email: payload.cliente.email,
+  if (!horario?.data || !horario?.inicio || !horario?.fim) {
+    return {
+      status: false,
+      code: 409,
+      message:
+        "Horário inválido ou expirado. Atualize a página e tente novamente.",
+      data: [],
+    };
+  }
 
-        data: horario.data,
-        inicio: horario.inicio,
-        fim: horario.fim,
+  const created =
+    await new CreateAppointmentUseCase().execute({
+      nome: payload.cliente.nome,
+      telefone: payload.cliente.telefone ?? "",
+      email: payload.cliente.email,
 
-        servico: servicoId,
-        profissional: profissionalId,
-        status: "AGENDADO",
-      } as any);
+      data: horario.data,
+      inicio: horario.inicio,
+      fim: horario.fim,
 
-    if (!created?.status) {
-      return {
-        status: false,
-        code: 500,
-        message: "Erro ao criar agendamento.",
-        data: [],
-      };
-    }
+      servico: servicoId,
+      profissional: profissionalId,
+      status: "AGENDADO",
+    } as any);
 
-    await new DeleteHorarioUseCase().execute(horarioId);
+  if (!created?.status) {
+    return {
+      status: false,
+      code: 500,
+      message: "Erro ao criar agendamento.",
+      data: [],
+    };
+  }
 
-    await this.atualizarRelatorio(horario.data);
+  await new DeleteHorarioUseCase().execute(horarioId);
 
+  await this.atualizarRelatorio(horario.data);
+
+  const dataFormatada = new Intl.DateTimeFormat("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${horario.data}T00:00:00Z`));
+
+
+  try {
     await new SendEmailUseCase().execute({
       from: "Agendamento <onboarding@resend.dev>",
       to: payload.cliente.email,
       subject: "Agendamento confirmado com sucesso",
       html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px;">
-          <h2>Agendamento confirmado ✅</h2>
+        <div style="
+          font-family: Arial, sans-serif;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 24px;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          color: #333;
+        ">
+          <h2 style="color: #16a34a;">
+            ✅ Agendamento confirmado
+          </h2>
 
           <p>
-            Seu e-mail foi confirmado com sucesso.
+            Olá, <strong>${payload.cliente.nome}</strong>!
           </p>
 
           <p>
-            Seu agendamento está confirmado.
+            Seu e-mail foi confirmado com sucesso e seu agendamento está garantido.
           </p>
 
-          <br />
+          <div style="
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 24px 0;
+          ">
+            <h3>
+              📋 Detalhes do agendamento
+            </h3>
+
+            <p>
+              <strong>📅 Data:</strong> ${dataFormatada}
+            </p>
+
+            <p>
+              <strong>🕒 Horário:</strong> ${horario.inicio} às ${horario.fim}
+            </p>
+          </div>
 
           <p>
             Aguardamos você no horário marcado.
           </p>
+
+          <p style="margin-top: 32px;">
+            Atenciosamente,<br />
+            <strong>Equipe de Agendamentos</strong>
+          </p>
         </div>
       `,
     });
-
-    return {
-      status: true,
-      code: 200,
-      message: "Agendamento criado com sucesso",
-      data: created,
-    };
+  } catch (error) {
+    console.error("Erro ao enviar email de confirmação:", error);
   }
+
+  return {
+    status: true,
+    code: 200,
+    message: "Agendamento criado com sucesso",
+    data: JSON.parse(JSON.stringify(created)),
+  };
+}
 
  private async processarGrupo(payload: any) {
   const participantes = payload.participantes || [];
@@ -200,12 +256,19 @@ export class VerificarCodigoController {
 
   const criarAgendamento = new CreateAppointmentUseCase();
   const resultados: any[] = [];
+  const horariosConfirmados: string[] = [];
+
   let contadorAgendamentos = 0;
 
   for (const p of participantes) {
     const horario = p.horario;
 
-    if (!horario?.data || !horario?.inicio || !horario?.fim || !horario?.id) {
+    if (
+      !horario?.data ||
+      !horario?.inicio ||
+      !horario?.fim ||
+      !horario?.id
+    ) {
       return {
         status: false,
         code: 409,
@@ -255,6 +318,23 @@ export class VerificarCodigoController {
 
     await new DeleteHorarioUseCase().execute(horario.id);
 
+    const dataFormatada = new Intl.DateTimeFormat("pt-BR", {
+      weekday: "long",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(new Date(`${horario.data}T00:00:00Z`));
+
+
+    horariosConfirmados.push(`
+      <li style="margin-bottom: 10px;">
+        <strong>${p.pessoaNome ?? "Participante"}</strong><br/>
+        📅 ${dataFormatada}<br/>
+        🕒 ${horario.inicio} às ${horario.fim}
+      </li>
+    `);
+
     resultados.push(created);
     contadorAgendamentos++;
   }
@@ -262,33 +342,77 @@ export class VerificarCodigoController {
   const primeiraData = participantes[0]?.horario?.data;
 
   if (primeiraData) {
-    await this.atualizarRelatorioGrupo(primeiraData, contadorAgendamentos);
+    await this.atualizarRelatorioGrupo(
+      primeiraData,
+      contadorAgendamentos
+    );
   }
 
-  await new SendEmailUseCase().execute({
-    from: "Agendamento <onboarding@resend.dev>",
-    to: payload.cliente.email,
-    subject: "Agendamentos confirmados com sucesso",
-    html: `
-      <div style="font-family: Arial, sans-serif; padding: 20px;">
-        <h2>Agendamentos confirmados ✅</h2>
+  try {
+    await new SendEmailUseCase().execute({
+      from: "Agendamento <onboarding@resend.dev>",
+      to: payload.cliente.email,
+      subject: "Agendamentos confirmados com sucesso",
+      html: `
+        <div style="
+          font-family: Arial, sans-serif;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 24px;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          color: #333;
+        ">
+          <h2 style="color: #16a34a;">
+            ✅ Agendamentos confirmados
+          </h2>
 
-        <p>Seu e-mail foi confirmado com sucesso.</p>
+          <p>
+            Olá, <strong>${payload.cliente.nome ?? "cliente"}</strong>!
+          </p>
 
-        <p>Todos os seus agendamentos foram confirmados.</p>
+          <p>
+            Seu e-mail foi confirmado com sucesso.
+            Todos os agendamentos do grupo foram confirmados.
+          </p>
 
-        <br />
+          <div style="
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 24px 0;
+          ">
+            <h3>
+              📋 Detalhes dos agendamentos
+            </h3>
 
-        <p>Aguardamos vocês nos horários marcados.</p>
-      </div>
-    `,
-  });
+            <ul style="padding-left: 20px;">
+              ${horariosConfirmados.join("")}
+            </ul>
+          </div>
+
+          <p>
+            Aguardamos vocês nos horários marcados.
+          </p>
+
+          <p style="margin-top: 32px;">
+            Atenciosamente,<br/>
+            <strong>Equipe de Agendamentos</strong>
+          </p>
+        </div>
+      `,
+    });
+  } catch (error) {
+    console.error("Erro ao enviar email do grupo:", error);
+  }
 
   return {
     status: true,
     code: 200,
     message: "Agendamentos em grupo criados com sucesso",
-    data: resultados,
+    data: JSON.parse(JSON.stringify(resultados)),
   };
 }
 

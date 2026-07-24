@@ -22,19 +22,6 @@ import { useEmailVerification } from "./hook/useEmailVerification";
 import { EmailVerification } from "./components/agendamentoPublic/EmailVerification";
 import { SuccessScreen } from "./components/agendamentoPublic/SucessScreen";
 
-interface PessoaGrupo {
-  id: string;
-  nome: string;
-}
-
-interface GrupoAgendamento {
-  pessoaId: string;
-  pessoaNome: string;
-  profissional?: any;
-  servico?: any;
-  horario?: any;
-  completo: boolean;
-}
 
 function formatMoney(value: number | string) {
   const numero = Number(value || 0);
@@ -218,6 +205,30 @@ export default function Home() {
       notify("Erro ao finalizar agendamento.", "error");
     }
   };
+
+  function salvarAgendamentoUnico(horario: any) {
+  if (!tempServico || !selectedProfissional) {
+    notify(
+      "Selecione um serviço e um profissional antes de escolher o horário.",
+      "warning"
+    );
+    return;
+  }
+
+  // remove o antigo para não acumular no carrinho
+  removerDoCarrinho();
+
+  // adiciona somente o atual
+  adicionarAoCarrinho({
+    servico: tempServico,
+    profissional: selectedProfissional,
+    horario,
+  });
+
+  setShowHorariosModal(false);
+
+  notify("Agendamento atualizado.", "success");
+}
 
   const emailVerification = useEmailVerification({
     email: cliente.email,
@@ -422,7 +433,7 @@ export default function Home() {
       {mainScreen === "agendamento" && (
         <>
           <div className="pt-6 pb-3 px-5 text-center border-b border-stone-100">
-            <h1 className="text-2xl font-bold text-stone-900">Kings Barber</h1>
+            <h1 className="text-2xl font-bold text-stone-900">Sua Barbearia</h1>
             <p className="text-stone-500 text-xs mt-0.5">
               {tipoAgendamento === "grupo" ? "Agendamento em grupo" : "Agendamento"}
             </p>
@@ -544,28 +555,31 @@ export default function Home() {
         </>
       )}
 
+      
+
       <HorariosModal
-        isOpen={showHorariosModal}
-        servicoNome={tempServico?.nome}
-        horarios={tipoAgendamento === "grupo" ? horariosFiltrados : horariosDisponiveis}
-        onClose={() => setShowHorariosModal(false)}
-        onSelectHorario={(horario) => {
-          if (tipoAgendamento === "unico") {
-            if (!tempServico || !selectedProfissional) {
-              notify("Selecione um serviço e um profissional antes de escolher o horário.", "warning");
-              return;
-            }
-            adicionarAoCarrinho({
-              servico: tempServico,
-              profissional: selectedProfissional,
-              horario: horario,
-            });
-            setShowHorariosModal(false);
-          } else {
-            salvarAgendamentoGrupo(horario);
-          }
-        }}
-      />
+  isOpen={showHorariosModal}
+  servicoNome={tempServico?.nome}
+  horarios={
+    tipoAgendamento === "grupo"
+      ? horariosFiltrados
+      : horariosDisponiveis
+  }
+  onClose={() => setShowHorariosModal(false)}
+  onSelectHorario={(horario) => {
+
+    if (tipoAgendamento === "unico") {
+
+      salvarAgendamentoUnico(horario);
+
+    } else {
+
+      salvarAgendamentoGrupo(horario);
+
+    }
+
+  }}
+/>
     </div>
   );
 }

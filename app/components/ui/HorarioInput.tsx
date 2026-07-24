@@ -13,7 +13,7 @@ export default function HorarioInput({ value, onChange }: HorarioInputProps) {
       disableClock
       clearIcon={null}
       className="bg-[#1B1B1B] text-[#E5E5E5] rounded p-2 border border-gray-700 w-full"
-      locale="en-GB" // força 24h
+      locale="en-GB" 
       hourPlaceholder="hh"
       minutePlaceholder="mm"
     />

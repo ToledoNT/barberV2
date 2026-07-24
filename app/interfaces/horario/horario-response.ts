@@ -20,3 +20,17 @@ interface IDadosAgendamento {
   totalHorarios: number;
   totalProcedimentos: number;
 }
+
+interface PessoaGrupo {
+  id: string;
+  nome: string;
+}
+
+interface GrupoAgendamento {
+  pessoaId: string;
+  pessoaNome: string;
+  profissional?: any;
+  servico?: any;
+  horario?: any;
+  completo: boolean;
+}
